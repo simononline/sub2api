@@ -8,15 +8,18 @@ export default {
     switchToDark: 'Switch to Dark Mode',
     dashboard: 'Dashboard',
     login: 'Login',
+    backToHome: 'Back Home',
     getStarted: 'Get Started',
     goToDashboard: 'Go to Dashboard',
-    // User-focused value proposition
-    heroSubtitle: 'One Key, All AI Models',
-    heroDescription: 'No need to manage multiple subscriptions. Access Claude, GPT, Gemini and more with a single API key',
+    poolNotice: 'We use a pool built from a large number of configured PRO accounts to keep platform calls and data handling stable.',
+    heroBadge: 'GPT-only API service',
+    heroSubtitle: 'One Key, Stable GPT Access',
+    heroDescription: 'Focused on GPT services with an OpenAI-compatible API, resource-pool routing, usage-based billing, and engineering support for apps, teams, and automation workflows.',
     tags: {
-      subscriptionToApi: 'Subscription to API',
-      stickySession: 'Session Persistence',
-      realtimeBilling: 'Pay As You Go'
+      subscriptionToApi: 'GPT Subscription to API',
+      stickySession: 'GPT Session Persistence',
+      realtimeBilling: 'Real-time Usage Billing',
+      engineerSupport: 'Engineer Support'
     },
     // Pain points section
     painPoints: {
@@ -46,12 +49,12 @@ export default {
       subtitle: 'Three simple steps to stress-free AI access'
     },
     features: {
-      unifiedGateway: 'One-Click Access',
-      unifiedGatewayDesc: 'Get a single API key to call all connected AI models. No separate applications needed.',
-      multiAccount: 'Always Reliable',
-      multiAccountDesc: 'Smart routing across multiple upstream accounts with automatic failover. Say goodbye to errors.',
-      balanceQuota: 'Pay What You Use',
-      balanceQuotaDesc: 'Usage-based billing with quota limits. Full visibility into team consumption.'
+      unifiedGateway: 'OpenAI-Compatible Gateway',
+      unifiedGatewayDesc: 'Keep the familiar OpenAI API workflow. Replace the Base URL and API key to connect GPT services.',
+      multiAccount: 'GPT Resource Pool Routing',
+      multiAccountDesc: 'Use resource pools, load balancing, and retries to reduce the impact of single-account limits.',
+      balanceQuota: 'Usage Billing & Quotas',
+      balanceQuotaDesc: 'Track spend by actual usage with balance, quota, and usage details for easier team cost control.'
     },
     // Comparison section
     comparison: {
@@ -64,46 +67,124 @@ export default {
       items: {
         pricing: {
           feature: 'Pricing',
-          official: 'Fixed monthly fee, pay even if unused',
-          us: 'Pay only for what you use'
+          official: 'Fixed subscriptions or separate billing',
+          us: 'Usage-based billing with flexible top-ups'
         },
         models: {
-          feature: 'Model Selection',
-          official: 'Single provider only',
-          us: 'Switch between models freely'
+          feature: 'Service Scope',
+          official: 'Connect official GPT services yourself',
+          us: 'Focused GPT access with unified routing'
         },
         management: {
           feature: 'Account Management',
-          official: 'Manage each service separately',
-          us: 'Unified key, one dashboard'
+          official: 'Maintain accounts, subscriptions, and keys separately',
+          us: 'One key for calls, quotas, and usage'
         },
         stability: {
           feature: 'Stability',
-          official: 'Single account rate limits',
-          us: 'Multi-account pool, auto-failover'
+          official: 'Handle single-account limits yourself',
+          us: 'Pool routing, retries, and failover'
         },
         control: {
           feature: 'Usage Control',
-          official: 'Not available',
-          us: 'Quotas & detailed analytics'
+          official: 'Build metering and limits yourself',
+          us: 'Quotas, details, and trend visibility'
         }
       }
     },
     providers: {
-      title: 'Supported AI Models',
-      description: 'One API, Multiple Choices',
+      title: 'GPT Service Scope',
+      description: 'The homepage now presents GPT-related capabilities only, so users do not assume Claude, Gemini, or other services are available.',
       supported: 'Supported',
       soon: 'Soon',
+      gptCore: 'GPT Model Access',
+      gptCoreDesc: 'A stable API entry for GPT chat, coding, summarization, tool calling, and common automation scenarios.',
+      openaiCompatible: 'OpenAI API Compatible',
+      openaiCompatibleDesc: 'Works with common SDKs, low-code tools, and self-hosted systems with a clear migration path.',
+      usageControl: 'Quota & Usage Management',
+      usageControlDesc: 'Record requests, tokens, and spend in real time for personal budgets and team cost allocation.',
       claude: 'Claude',
       gemini: 'Gemini',
       antigravity: 'Antigravity',
       more: 'More'
     },
+    supportedModels: {
+      title: 'Currently Supported GPT Models',
+      description: 'The model list is read from a public API first and reflects OpenAI / GPT models available through active channels.',
+      loading: 'Loading model list...',
+      count: '{count} models',
+      live: 'Loaded from live API',
+      fallback: 'Showing the default GPT allowlist while the API is unavailable',
+      empty: 'No displayable models were found',
+      channelCount: '{count} routes'
+    },
+    serviceHighlights: {
+      title: 'Core Service Guarantees',
+      description: 'The page emphasizes stability, speed, security, and support, based on the main needs of API relay and account-pool services.',
+      items: {
+        pool: {
+          title: 'Resource Pool Capacity',
+          desc: 'Unified upstream resource routing reduces the impact of single-account throttling or incidents.'
+        },
+        speed: {
+          title: 'Stable and Fast',
+          desc: 'Optimized request paths for high-frequency chats, plugin calls, and automation tasks.'
+        },
+        security: {
+          title: 'Key Isolation',
+          desc: 'Users call with platform API keys, making permissions, quotas, and risk control easier to centralize.'
+        },
+        support: {
+          title: 'Engineer Support',
+          desc: 'Get help with integration checks, SDK configuration, and API error diagnosis.'
+        }
+      }
+    },
+    workflow: {
+      title: 'Connect GPT in Three Steps',
+      description: 'A lightweight path from signup to API calls for existing projects.',
+      steps: {
+        createKey: {
+          title: 'Create an API Key',
+          desc: 'Sign in, create a key in the dashboard, and assign quota based on your usage scenario.'
+        },
+        callApi: {
+          title: 'Replace the Base URL',
+          desc: 'Update the Base URL in your OpenAI SDK or compatible tool while keeping the familiar request format.'
+        },
+        monitor: {
+          title: 'Monitor Usage and Cost',
+          desc: 'Track requests, tokens, balance, and spend trends in the dashboard, then adjust quotas as needed.'
+        }
+      }
+    },
+    faq: {
+      title: 'FAQ',
+      description: 'Common questions about GPT API access, compatibility, security, and support.',
+      items: {
+        difference: {
+          question: 'How is this different from using official GPT directly?',
+          answer: 'The service still targets GPT capabilities, while the platform adds unified keys, resource-pool routing, usage records, and quota management.'
+        },
+        compatibility: {
+          question: 'Can existing OpenAI SDKs be used?',
+          answer: 'The page positions the service as an OpenAI-compatible gateway. In most cases you replace the Base URL and API key; exact parameters depend on your service configuration and docs.'
+        },
+        security: {
+          question: 'How are accounts and keys isolated?',
+          answer: 'Users only hold platform API keys and manage quotas or status in the dashboard instead of spreading upstream accounts across projects.'
+        },
+        support: {
+          question: 'What happens when an integration fails?',
+          answer: 'Use request logs, quota records, and technical support to diagnose model parameters, network paths, key permissions, and upstream responses.'
+        }
+      }
+    },
     // CTA section
     cta: {
-      title: 'Ready to Get Started?',
-      description: 'Sign up now and get free trial credits to experience seamless AI access',
-      button: 'Sign Up Free'
+      title: 'Ready to Connect GPT API?',
+      description: 'The existing gateway, billing, and usage features stay in place while the homepage clearly focuses on GPT services.',
+      button: 'Start Using'
     },
     footer: {
       allRightsReserved: 'All rights reserved.'
@@ -345,6 +426,7 @@ export default {
     announcements: 'Announcements',
     apiKeys: 'API Keys',
     usage: 'Usage',
+    leaderboard: 'Leaderboard',
     redeem: 'Redeem',
     affiliate: 'Affiliate Rebates',
     profile: 'Profile',
@@ -605,7 +687,17 @@ export default {
     viewUsage: 'View Usage',
     checkDetailedLogs: 'Check detailed usage logs',
     redeemCode: 'Redeem Code',
-    addBalanceWithCode: 'Add balance with a code'
+    addBalanceWithCode: 'Add balance with a code',
+    availableModels: 'Available Models',
+    availableModelsCount: '{count} models',
+    availableModelsLoading: 'Querying /v1/models...',
+    availableModelsSummary: 'Based on {keys} active API keys across {groups} groups',
+    availableModelsNoKeysSummary: 'No active API keys',
+    availableModelsLoadFailed: 'Failed to load the model list. Please try again later.',
+    availableModelsPartialFailed: '{count} group queries failed. Showing models from successful queries.',
+    noActiveApiKeys: 'No active API keys',
+    createKeyForModels: 'Create and enable an API key to view available models.',
+    noAvailableModels: 'No available models were found'
   },
 
   // Groups (shared)
@@ -970,6 +1062,58 @@ export default {
       intervals: 'Tiered Pricing',
       unitPerMillion: '/ 1M tokens',
       unitPerRequest: '/ request'
+    }
+  },
+
+  leaderboard: {
+    title: 'Leaderboard',
+    description: 'View the user spending leaderboard',
+    descriptionMasked: 'You are viewing as a regular user. Accounts are masked while rank, spend, requests, and token totals remain visible.',
+    descriptionAdmin: 'You are viewing as an administrator. Real user accounts and full ranking data are visible.',
+    badge: 'Usage Leaderboard',
+    startDate: 'Start Date',
+    endDate: 'End Date',
+    limit: 'Limit',
+    presets: {
+      sevenDays: 'Last 7 Days',
+      thirtyDays: 'Last 30 Days',
+      ninetyDays: 'Last 90 Days'
+    },
+    totalSpend: 'Total Spend',
+    totalRequests: 'Total Requests',
+    totalTokens: 'Total Tokens',
+    accountBalance: 'Account Balance',
+    currentAccount: 'Current Account',
+    currentPackage: 'Current Package',
+    packageCountdown: 'Package Countdown',
+    loadingPackage: 'Loading package',
+    noActivePackage: 'No Package',
+    noActivePackageHint: 'No active package is currently assigned',
+    activePackageCount: '{count} active packages',
+    morePackages: '+{count} more',
+    noExpiration: 'No expiration',
+    expiresOn: '{plan} expires on {date}',
+    countdownExpired: 'Expired',
+    countdownDaysHours: '{days}d {hours}h',
+    countdownHoursMinutes: '{hours}h {minutes}m',
+    countdownMinutes: '{minutes}m',
+    countdownLessThanMinute: '< 1m',
+    listTitle: 'Spending Ranking',
+    rangeLabel: '{start} to {end}, showing up to top {limit}',
+    maskedAccounts: 'Masked Accounts',
+    realAccounts: 'Real Accounts',
+    accountMaskedHint: 'Regular user view',
+    accountRealHint: 'Admin view',
+    invalidRange: 'Start date cannot be later than end date',
+    loadError: 'Failed to load leaderboard',
+    emptyTitle: 'No ranking data',
+    emptyDescription: 'There are no usage records for the selected date range.',
+    columns: {
+      rank: 'Rank',
+      account: 'Account',
+      spend: 'Spend',
+      requests: 'Requests',
+      tokens: 'Tokens'
     }
   },
 

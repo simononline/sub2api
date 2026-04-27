@@ -155,3 +155,35 @@ func TestBuildPlatformSections_GroupsByPlatform(t *testing.T) {
 	require.Len(t, sections[0].SupportedModels, 1)
 	require.Equal(t, "claude-sonnet-4-6", sections[0].SupportedModels[0].Name)
 }
+
+func TestBuildPublicSupportedModels_FiltersActiveAndPlatform(t *testing.T) {
+	channels := []service.AvailableChannel{
+		{
+			Status: service.StatusActive,
+			SupportedModels: []service.SupportedModel{
+				{Name: "gpt-5.4", Platform: "openai"},
+				{Name: "GPT-5.4", Platform: "openai"}, // 同一渠道内大小写重复不重复计数
+				{Name: "claude-sonnet-4-6", Platform: "anthropic"},
+			},
+		},
+		{
+			Status: service.StatusActive,
+			SupportedModels: []service.SupportedModel{
+				{Name: "gpt-5.4", Platform: "openai"},
+				{Name: "gpt-image-2", Platform: "openai"},
+			},
+		},
+		{
+			Status: service.StatusDisabled,
+			SupportedModels: []service.SupportedModel{
+				{Name: "gpt-inactive", Platform: "openai"},
+			},
+		},
+	}
+
+	out := buildPublicSupportedModels(channels, "openai")
+	require.Equal(t, []publicSupportedModel{
+		{Name: "gpt-5.4", Platform: "openai", ChannelCount: 2},
+		{Name: "gpt-image-2", Platform: "openai", ChannelCount: 1},
+	}, out)
+}

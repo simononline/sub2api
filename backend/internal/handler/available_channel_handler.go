@@ -2,6 +2,7 @@ package handler
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
 	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
@@ -111,6 +112,31 @@ type userAvailableChannel struct {
 	Platforms   []userChannelPlatformSection `json:"platforms"`
 }
 
+// publicSupportedModel 是首页公开展示的模型条目。只暴露模型、平台和承载渠道数量，
+// 不包含分组、定价、账号或内部渠道 ID。
+type publicSupportedModel struct {
+	Name         string `json:"name"`
+	Platform     string `json:"platform"`
+	ChannelCount int    `json:"channel_count"`
+}
+
+// PublicModels 列出公开可展示的支持模型。
+// GET /api/v1/channels/public-models?platform=openai
+func (h *AvailableChannelHandler) PublicModels(c *gin.Context) {
+	if h == nil || h.channelService == nil {
+		response.Success(c, []publicSupportedModel{})
+		return
+	}
+
+	channels, err := h.channelService.ListAvailable(c.Request.Context())
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+
+	response.Success(c, buildPublicSupportedModels(channels, c.Query("platform")))
+}
+
 // List 列出当前用户可见的「可用渠道」。
 // GET /api/v1/channels/available
 func (h *AvailableChannelHandler) List(c *gin.Context) {
@@ -164,6 +190,71 @@ func (h *AvailableChannelHandler) List(c *gin.Context) {
 	}
 
 	response.Success(c, out)
+}
+
+func buildPublicSupportedModels(
+	channels []service.AvailableChannel,
+	platformFilter string,
+) []publicSupportedModel {
+	platformFilter = strings.ToLower(strings.TrimSpace(platformFilter))
+
+	type modelKey struct {
+		platform string
+		name     string
+	}
+
+	counts := make(map[modelKey]int)
+	names := make(map[modelKey]string)
+	platforms := make(map[modelKey]string)
+
+	for _, ch := range channels {
+		if ch.Status != service.StatusActive {
+			continue
+		}
+		seenInChannel := make(map[modelKey]struct{})
+		for _, m := range ch.SupportedModels {
+			name := strings.TrimSpace(m.Name)
+			platform := strings.TrimSpace(m.Platform)
+			if name == "" || platform == "" {
+				continue
+			}
+
+			platformLower := strings.ToLower(platform)
+			if platformFilter != "" && platformLower != platformFilter {
+				continue
+			}
+
+			key := modelKey{platform: platformLower, name: strings.ToLower(name)}
+			if _, ok := seenInChannel[key]; ok {
+				continue
+			}
+			seenInChannel[key] = struct{}{}
+
+			if _, ok := names[key]; !ok {
+				names[key] = name
+				platforms[key] = platform
+			}
+			counts[key]++
+		}
+	}
+
+	out := make([]publicSupportedModel, 0, len(counts))
+	for key, count := range counts {
+		out = append(out, publicSupportedModel{
+			Name:         names[key],
+			Platform:     platforms[key],
+			ChannelCount: count,
+		})
+	}
+
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].Platform != out[j].Platform {
+			return strings.ToLower(out[i].Platform) < strings.ToLower(out[j].Platform)
+		}
+		return strings.ToLower(out[i].Name) < strings.ToLower(out[j].Name)
+	})
+
+	return out
 }
 
 // buildPlatformSections 把一个渠道按 visibleGroups 的平台集合拆成有序的 section 列表：

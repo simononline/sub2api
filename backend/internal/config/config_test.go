@@ -724,7 +724,7 @@ func TestConfigAddressHelpers(t *testing.T) {
 	}
 
 	dbCfg.Password = "secret"
-	if !strings.Contains(dbCfg.DSN(), "password=secret") {
+	if !strings.Contains(dbCfg.DSN(), "password='secret'") {
 		t.Fatalf("DatabaseConfig.DSN() missing password")
 	}
 
@@ -733,10 +733,10 @@ func TestConfigAddressHelpers(t *testing.T) {
 		t.Fatalf("DatabaseConfig.DSNWithTimezone() should omit password when empty")
 	}
 
-	if !strings.Contains(dbCfg.DSNWithTimezone(""), "TimeZone=Asia/Shanghai") {
+	if !strings.Contains(dbCfg.DSNWithTimezone(""), "TimeZone='Asia/Shanghai'") {
 		t.Fatalf("DatabaseConfig.DSNWithTimezone() should use default timezone")
 	}
-	if !strings.Contains(dbCfg.DSNWithTimezone("UTC"), "TimeZone=UTC") {
+	if !strings.Contains(dbCfg.DSNWithTimezone("UTC"), "TimeZone='UTC'") {
 		t.Fatalf("DatabaseConfig.DSNWithTimezone() should use provided timezone")
 	}
 
@@ -950,11 +950,27 @@ func TestDatabaseDSNWithTimezone_WithPassword(t *testing.T) {
 		SSLMode:  "prefer",
 	}
 	got := d.DSNWithTimezone("UTC")
-	if !strings.Contains(got, "password=p") {
+	if !strings.Contains(got, "password='p'") {
 		t.Fatalf("DSNWithTimezone should include password: %q", got)
 	}
-	if !strings.Contains(got, "TimeZone=UTC") {
+	if !strings.Contains(got, "TimeZone='UTC'") {
 		t.Fatalf("DSNWithTimezone should include TimeZone=UTC: %q", got)
+	}
+}
+
+func TestDatabaseDSNQuotesSpecialCharacters(t *testing.T) {
+	d := &DatabaseConfig{
+		Host:     "db.internal",
+		Port:     5432,
+		User:     "sub2api",
+		Password: `pa's\word #1`,
+		DBName:   "sub2api",
+		SSLMode:  "disable",
+	}
+
+	got := d.DSN()
+	if !strings.Contains(got, `password='pa\'s\\word #1'`) {
+		t.Fatalf("DSN should quote and escape password: %q", got)
 	}
 }
 

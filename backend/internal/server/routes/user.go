@@ -15,6 +15,13 @@ func RegisterUserRoutes(
 	jwtAuth middleware.JWTAuthMiddleware,
 	settingService *service.SettingService,
 ) {
+	// 首页公开展示的支持模型列表。只返回模型名/平台/承载渠道数量，不暴露账号、
+	// 分组、定价或内部渠道 ID。
+	publicChannels := v1.Group("/channels")
+	{
+		publicChannels.GET("/public-models", h.AvailableChannel.PublicModels)
+	}
+
 	authenticated := v1.Group("")
 	authenticated.Use(gin.HandlerFunc(jwtAuth))
 	authenticated.Use(middleware.BackendModeUserGuard(settingService))
@@ -86,6 +93,7 @@ func RegisterUserRoutes(
 			usage.GET("/dashboard/stats", h.Usage.DashboardStats)
 			usage.GET("/dashboard/trend", h.Usage.DashboardTrend)
 			usage.GET("/dashboard/models", h.Usage.DashboardModels)
+			usage.GET("/dashboard/users-ranking", h.Admin.Dashboard.GetViewerUserSpendingRanking)
 			usage.POST("/dashboard/api-keys-usage", h.Usage.DashboardAPIKeysUsage)
 		}
 

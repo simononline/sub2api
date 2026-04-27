@@ -12,6 +12,10 @@
       ></div>
     </div>
 
+    <div v-if="$slots.topRight" class="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
+      <slot name="topRight" />
+    </div>
+
     <!-- Content Container -->
     <div class="relative z-10 w-full max-w-md">
       <!-- Logo/Brand -->

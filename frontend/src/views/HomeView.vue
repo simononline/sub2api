@@ -104,10 +104,30 @@
     <!-- Main Content -->
     <main class="relative z-10 flex-1 px-6 py-14 md:py-20">
       <div class="mx-auto max-w-6xl">
+        <!-- Pool Notice -->
+        <div
+          class="mb-8 flex flex-col gap-3 rounded-lg border border-primary-400/30 bg-primary-500/10 p-4 text-sm text-primary-800 backdrop-blur-sm dark:text-primary-200 sm:flex-row sm:items-center"
+        >
+          <div
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary-400/30 bg-white/70 text-primary-600 dark:bg-dark-950/70 dark:text-primary-400"
+          >
+            <Icon name="server" size="md" />
+          </div>
+          <p class="leading-6">
+            {{ t('home.poolNotice') }}
+          </p>
+        </div>
+
         <!-- Hero Section - Left/Right Layout -->
         <div class="mb-14 flex flex-col items-center justify-between gap-12 lg:flex-row lg:gap-16">
           <!-- Left: Text Content -->
           <div class="flex-1 text-center lg:text-left">
+            <div
+              class="mb-4 inline-flex items-center gap-2 rounded-full border border-primary-400/30 bg-primary-500/10 px-3 py-1 text-xs font-medium text-primary-700 dark:text-primary-300"
+            >
+              <Icon name="sparkles" size="sm" />
+              <span>{{ t('home.heroBadge') }}</span>
+            </div>
             <h1
               class="mb-5 text-5xl font-normal leading-none text-gray-950 dark:text-dark-50 md:text-6xl lg:text-hero"
             >
@@ -116,9 +136,12 @@
             <p class="mb-8 max-w-xl text-base leading-7 text-gray-600 dark:text-dark-300 md:text-lg">
               {{ siteSubtitle }}
             </p>
+            <p class="mb-8 max-w-xl text-sm leading-6 text-gray-500 dark:text-dark-400 md:text-base">
+              {{ t('home.heroDescription') }}
+            </p>
 
             <!-- CTA Button -->
-            <div>
+            <div class="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
               <router-link
                 :to="isAuthenticated ? dashboardPath : '/login'"
                 class="btn btn-primary px-8 py-3 text-base"
@@ -126,6 +149,15 @@
                 {{ isAuthenticated ? t('home.goToDashboard') : t('home.getStarted') }}
                 <Icon name="arrowRight" size="md" class="ml-2" :stroke-width="2" />
               </router-link>
+              <a
+                v-if="docUrl"
+                :href="docUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-secondary px-6 py-3 text-base"
+              >
+                {{ t('home.viewDocs') }}
+              </a>
             </div>
           </div>
 
@@ -148,14 +180,14 @@
                     <span class="code-prompt">$</span>
                     <span class="code-cmd">curl</span>
                     <span class="code-flag">-X POST</span>
-                    <span class="code-url">/v1/messages</span>
+                    <span class="code-url">/v1/chat/completions</span>
                   </div>
                   <div class="code-line line-2">
-                    <span class="code-comment"># Routing to upstream...</span>
+                    <span class="code-comment"># GPT pool routing...</span>
                   </div>
                   <div class="code-line line-3">
                     <span class="code-success">200 OK</span>
-                    <span class="code-response">{ "content": "Hello!" }</span>
+                    <span class="code-response">{ "model": "gpt-*" }</span>
                   </div>
                   <div class="code-line line-4">
                     <span class="code-prompt">$</span>
@@ -191,6 +223,14 @@
             <Icon name="chart" size="sm" class="text-primary-500" />
             <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{
               t('home.tags.realtimeBilling')
+            }}</span>
+          </div>
+          <div
+            class="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white/80 px-5 py-2.5 backdrop-blur-sm dark:border-dark-800 dark:bg-dark-950/80"
+          >
+            <Icon name="users" size="sm" class="text-primary-500" />
+            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{
+              t('home.tags.engineerSupport')
             }}</span>
           </div>
         </div>
@@ -273,93 +313,247 @@
           </div>
         </div>
 
-        <!-- Supported Providers -->
-        <div class="mb-8 text-center">
-          <h2 class="mb-3 text-2xl font-normal text-gray-950 dark:text-dark-50">
-            {{ t('home.providers.title') }}
-          </h2>
-          <p class="text-sm text-gray-600 dark:text-dark-400">
-            {{ t('home.providers.description') }}
-          </p>
-        </div>
+        <!-- GPT Service Scope -->
+        <section class="mb-16">
+          <div class="mb-8 text-center">
+            <h2 class="mb-3 text-2xl font-normal text-gray-950 dark:text-dark-50">
+              {{ t('home.providers.title') }}
+            </h2>
+            <p class="text-sm text-gray-600 dark:text-dark-400">
+              {{ t('home.providers.description') }}
+            </p>
+          </div>
 
-        <div class="mb-16 flex flex-wrap items-center justify-center gap-4">
-          <!-- Claude - Supported -->
+          <div class="grid gap-4 md:grid-cols-3">
+            <div
+              v-for="service in gptServiceCards"
+              :key="service.title"
+              class="rounded-lg border border-gray-200 bg-white/70 p-5 backdrop-blur-sm transition-colors hover:border-primary-400/50 dark:border-dark-800 dark:bg-dark-950/70"
+            >
+              <div class="mb-4 flex items-center justify-between gap-3">
+                <div
+                  :class="[
+                    'flex h-10 w-10 items-center justify-center rounded-lg border',
+                    service.iconClass
+                  ]"
+                >
+                  <Icon :name="service.icon" size="md" />
+                </div>
+                <span
+                  class="rounded bg-primary-100 px-2 py-1 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
+                >
+                  {{ t('home.providers.supported') }}
+                </span>
+              </div>
+              <h3 class="mb-2 text-base font-normal text-gray-950 dark:text-dark-50">
+                {{ service.title }}
+              </h3>
+              <p class="text-sm leading-6 text-gray-600 dark:text-dark-400">
+                {{ service.description }}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Supported Models -->
+        <section class="mb-16">
+          <div class="mb-8 text-center">
+            <h2 class="mb-3 text-2xl font-normal text-gray-950 dark:text-dark-50">
+              {{ t('home.supportedModels.title') }}
+            </h2>
+            <p class="text-sm text-gray-600 dark:text-dark-400">
+              {{ t('home.supportedModels.description') }}
+            </p>
+          </div>
+
           <div
-            class="flex items-center gap-2 rounded-lg border border-primary-500/30 bg-white/70 px-5 py-3 backdrop-blur-sm dark:bg-dark-950/70"
+            class="rounded-lg border border-gray-200 bg-white/70 p-5 backdrop-blur-sm dark:border-dark-800 dark:bg-dark-950/70"
+          >
+            <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-dark-300">
+                <Icon name="database" size="sm" class="text-primary-500" />
+                <span>
+                  {{ modelsLoading
+                    ? t('home.supportedModels.loading')
+                    : t('home.supportedModels.count', { count: displayedSupportedModels.length }) }}
+                </span>
+              </div>
+              <span
+                class="text-xs text-gray-500 dark:text-dark-400"
+              >
+                {{ modelsFromFallback
+                  ? t('home.supportedModels.fallback')
+                  : t('home.supportedModels.live') }}
+              </span>
+            </div>
+
+            <div
+              v-if="displayedSupportedModels.length > 0"
+              class="flex max-h-56 flex-wrap gap-2 overflow-y-auto pr-1"
+            >
+              <span
+                v-for="model in displayedSupportedModels"
+                :key="`${model.platform}:${model.name}`"
+                class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/80 px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-dark-800 dark:bg-dark-900/80 dark:text-dark-200"
+              >
+                <span>{{ model.name }}</span>
+                <span
+                  v-if="model.channel_count > 0"
+                  class="rounded-full bg-primary-100 px-1.5 py-0.5 text-[10px] text-primary-700 dark:bg-primary-900/30 dark:text-primary-300"
+                >
+                  {{ t('home.supportedModels.channelCount', { count: model.channel_count }) }}
+                </span>
+              </span>
+            </div>
+            <div v-else class="py-6 text-center text-sm text-gray-500 dark:text-dark-400">
+              {{ t('home.supportedModels.empty') }}
+            </div>
+          </div>
+        </section>
+
+        <!-- Service Highlights -->
+        <section class="mb-16">
+          <div class="mb-8 text-center">
+            <h2 class="mb-3 text-2xl font-normal text-gray-950 dark:text-dark-50">
+              {{ t('home.serviceHighlights.title') }}
+            </h2>
+            <p class="text-sm text-gray-600 dark:text-dark-400">
+              {{ t('home.serviceHighlights.description') }}
+            </p>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div
+              v-for="item in highlightCards"
+              :key="item.title"
+              class="rounded-lg border border-gray-200 bg-white/65 p-5 backdrop-blur-sm dark:border-dark-800 dark:bg-dark-900/70"
+            >
+              <Icon :name="item.icon" size="lg" class="mb-4 text-primary-500" />
+              <h3 class="mb-2 text-base font-normal text-gray-950 dark:text-dark-50">
+                {{ item.title }}
+              </h3>
+              <p class="text-sm leading-6 text-gray-600 dark:text-dark-400">
+                {{ item.description }}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Workflow -->
+        <section class="mb-16">
+          <div class="mb-8 text-center">
+            <h2 class="mb-3 text-2xl font-normal text-gray-950 dark:text-dark-50">
+              {{ t('home.workflow.title') }}
+            </h2>
+            <p class="text-sm text-gray-600 dark:text-dark-400">
+              {{ t('home.workflow.description') }}
+            </p>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-3">
+            <div
+              v-for="step in workflowSteps"
+              :key="step.number"
+              class="rounded-lg border border-gray-200 bg-white/70 p-6 backdrop-blur-sm dark:border-dark-800 dark:bg-dark-950/70"
+            >
+              <div class="mb-4 font-mono text-xs text-primary-600 dark:text-primary-400">
+                {{ step.number }}
+              </div>
+              <h3 class="mb-2 text-lg font-normal text-gray-950 dark:text-dark-50">
+                {{ step.title }}
+              </h3>
+              <p class="text-sm leading-6 text-gray-600 dark:text-dark-400">
+                {{ step.description }}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Comparison -->
+        <section class="mb-16">
+          <div class="mb-8 text-center">
+            <h2 class="mb-3 text-2xl font-normal text-gray-950 dark:text-dark-50">
+              {{ t('home.comparison.title') }}
+            </h2>
+          </div>
+
+          <div
+            class="overflow-hidden rounded-lg border border-gray-200 bg-white/70 backdrop-blur-sm dark:border-dark-800 dark:bg-dark-950/70"
           >
             <div
-              class="flex h-8 w-8 items-center justify-center rounded-md border border-orange-500/30 bg-orange-500/10"
+              class="hidden grid-cols-[1.1fr_1fr_1fr] border-b border-gray-200 bg-gray-100/70 text-xs font-medium uppercase text-gray-500 dark:border-dark-800 dark:bg-dark-900/80 dark:text-dark-400 md:grid"
             >
-              <span class="text-xs font-medium text-orange-500">C</span>
+              <div class="px-5 py-3">{{ t('home.comparison.headers.feature') }}</div>
+              <div class="px-5 py-3">{{ t('home.comparison.headers.official') }}</div>
+              <div class="px-5 py-3">{{ t('home.comparison.headers.us') }}</div>
             </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.claude') }}</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
-          </div>
-          <!-- GPT - Supported -->
-          <div
-            class="flex items-center gap-2 rounded-lg border border-primary-500/30 bg-white/70 px-5 py-3 backdrop-blur-sm dark:bg-dark-950/70"
-          >
             <div
-              class="flex h-8 w-8 items-center justify-center rounded-md border border-primary-500/30 bg-primary-500/10"
+              v-for="row in comparisonRows"
+              :key="row.feature"
+              class="grid gap-3 border-b border-gray-100 px-5 py-4 last:border-0 dark:border-dark-800 md:grid-cols-[1.1fr_1fr_1fr] md:gap-0 md:px-0 md:py-0"
             >
-              <span class="text-xs font-medium text-primary-500">G</span>
+              <div class="font-medium text-gray-950 dark:text-dark-50 md:px-5 md:py-4">
+                {{ row.feature }}
+              </div>
+              <div class="text-sm text-gray-500 dark:text-dark-400 md:px-5 md:py-4">
+                <span class="mb-1 block text-xs font-medium uppercase text-gray-400 md:hidden">
+                  {{ t('home.comparison.headers.official') }}
+                </span>
+                {{ row.official }}
+              </div>
+              <div class="text-sm text-primary-700 dark:text-primary-300 md:px-5 md:py-4">
+                <span class="mb-1 block text-xs font-medium uppercase text-gray-400 md:hidden">
+                  {{ t('home.comparison.headers.us') }}
+                </span>
+                {{ row.us }}
+              </div>
             </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">GPT</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
           </div>
-          <!-- Gemini - Supported -->
-          <div
-            class="flex items-center gap-2 rounded-lg border border-primary-500/30 bg-white/70 px-5 py-3 backdrop-blur-sm dark:bg-dark-950/70"
-          >
+        </section>
+
+        <!-- FAQ -->
+        <section class="mb-16">
+          <div class="mb-8 text-center">
+            <h2 class="mb-3 text-2xl font-normal text-gray-950 dark:text-dark-50">
+              {{ t('home.faq.title') }}
+            </h2>
+            <p class="text-sm text-gray-600 dark:text-dark-400">
+              {{ t('home.faq.description') }}
+            </p>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-2">
             <div
-              class="flex h-8 w-8 items-center justify-center rounded-md border border-blue-500/30 bg-blue-500/10"
+              v-for="item in faqItems"
+              :key="item.question"
+              class="rounded-lg border border-gray-200 bg-white/65 p-5 backdrop-blur-sm dark:border-dark-800 dark:bg-dark-900/70"
             >
-              <span class="text-xs font-medium text-blue-500">G</span>
+              <h3 class="mb-2 text-base font-normal text-gray-950 dark:text-dark-50">
+                {{ item.question }}
+              </h3>
+              <p class="text-sm leading-6 text-gray-600 dark:text-dark-400">
+                {{ item.answer }}
+              </p>
             </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.gemini') }}</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
           </div>
-          <!-- Antigravity - Supported -->
-          <div
-            class="flex items-center gap-2 rounded-lg border border-primary-500/30 bg-white/70 px-5 py-3 backdrop-blur-sm dark:bg-dark-950/70"
+        </section>
+
+        <!-- CTA -->
+        <section class="border-y border-gray-200 py-10 text-center dark:border-dark-800">
+          <h2 class="mb-3 text-2xl font-normal text-gray-950 dark:text-dark-50">
+            {{ t('home.cta.title') }}
+          </h2>
+          <p class="mx-auto mb-6 max-w-2xl text-sm leading-6 text-gray-600 dark:text-dark-400">
+            {{ t('home.cta.description') }}
+          </p>
+          <router-link
+            :to="isAuthenticated ? dashboardPath : '/login'"
+            class="btn btn-primary px-8 py-3 text-base"
           >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-md border border-rose-500/30 bg-rose-500/10"
-            >
-              <span class="text-xs font-medium text-rose-500">A</span>
-            </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.antigravity') }}</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
-          </div>
-          <!-- More - Coming Soon -->
-          <div
-            class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white/40 px-5 py-3 opacity-70 backdrop-blur-sm dark:border-dark-800 dark:bg-dark-950/50"
-          >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-md border border-gray-500/30 bg-gray-500/10"
-            >
-              <span class="text-xs font-medium text-gray-500">+</span>
-            </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.more') }}</span>
-            <span
-              class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500 dark:bg-dark-700 dark:text-dark-400"
-              >{{ t('home.providers.soon') }}</span
-            >
-          </div>
-        </div>
+            {{ isAuthenticated ? t('home.goToDashboard') : t('home.cta.button') }}
+            <Icon name="arrowRight" size="md" class="ml-2" :stroke-width="2" />
+          </router-link>
+        </section>
       </div>
     </main>
 
@@ -401,18 +595,180 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore, useAppStore } from '@/stores'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Icon from '@/components/icons/Icon.vue'
+import userChannelsAPI, { type PublicSupportedModel } from '@/api/channels'
+import { getModelsByPlatform } from '@/composables/useModelWhitelist'
 
 const { t } = useI18n()
 
+type HomeIconName =
+  | 'brain'
+  | 'server'
+  | 'shield'
+  | 'bolt'
+  | 'users'
+  | 'chart'
+  | 'key'
+  | 'terminal'
+  | 'creditCard'
+  | 'chat'
+  | 'clock'
+  | 'badge'
+
 const authStore = useAuthStore()
 const appStore = useAppStore()
+const supportedModels = ref<PublicSupportedModel[]>([])
+const modelsLoading = ref(false)
+const modelsFromFallback = ref(true)
 
 // Site settings - directly from appStore (already initialized from injected config)
 const siteName = computed(() => appStore.cachedPublicSettings?.site_name || appStore.siteName || 'WeShare')
 const siteLogo = computed(() => appStore.cachedPublicSettings?.site_logo || appStore.siteLogo || '')
-const siteSubtitle = computed(() => appStore.cachedPublicSettings?.site_subtitle || 'AI API Gateway Platform')
+const siteSubtitle = computed(() => appStore.cachedPublicSettings?.site_subtitle || t('home.heroSubtitle'))
 const docUrl = computed(() => appStore.cachedPublicSettings?.doc_url || appStore.docUrl || '')
 const homeContent = computed(() => appStore.cachedPublicSettings?.home_content || '')
+
+const gptServiceCards = computed<Array<{
+  icon: HomeIconName
+  iconClass: string
+  title: string
+  description: string
+}>>(() => [
+  {
+    icon: 'brain',
+    iconClass: 'border-primary-500/30 bg-primary-500/10 text-primary-500',
+    title: t('home.providers.gptCore'),
+    description: t('home.providers.gptCoreDesc')
+  },
+  {
+    icon: 'terminal',
+    iconClass: 'border-blue-500/30 bg-blue-500/10 text-blue-500',
+    title: t('home.providers.openaiCompatible'),
+    description: t('home.providers.openaiCompatibleDesc')
+  },
+  {
+    icon: 'chart',
+    iconClass: 'border-amber-500/30 bg-amber-500/10 text-amber-500',
+    title: t('home.providers.usageControl'),
+    description: t('home.providers.usageControlDesc')
+  }
+])
+
+const highlightCards = computed<Array<{
+  icon: HomeIconName
+  title: string
+  description: string
+}>>(() => [
+  {
+    icon: 'server',
+    title: t('home.serviceHighlights.items.pool.title'),
+    description: t('home.serviceHighlights.items.pool.desc')
+  },
+  {
+    icon: 'bolt',
+    title: t('home.serviceHighlights.items.speed.title'),
+    description: t('home.serviceHighlights.items.speed.desc')
+  },
+  {
+    icon: 'shield',
+    title: t('home.serviceHighlights.items.security.title'),
+    description: t('home.serviceHighlights.items.security.desc')
+  },
+  {
+    icon: 'users',
+    title: t('home.serviceHighlights.items.support.title'),
+    description: t('home.serviceHighlights.items.support.desc')
+  }
+])
+
+const workflowSteps = computed(() => [
+  {
+    number: '01',
+    title: t('home.workflow.steps.createKey.title'),
+    description: t('home.workflow.steps.createKey.desc')
+  },
+  {
+    number: '02',
+    title: t('home.workflow.steps.callApi.title'),
+    description: t('home.workflow.steps.callApi.desc')
+  },
+  {
+    number: '03',
+    title: t('home.workflow.steps.monitor.title'),
+    description: t('home.workflow.steps.monitor.desc')
+  }
+])
+
+const comparisonRows = computed(() => [
+  {
+    feature: t('home.comparison.items.pricing.feature'),
+    official: t('home.comparison.items.pricing.official'),
+    us: t('home.comparison.items.pricing.us')
+  },
+  {
+    feature: t('home.comparison.items.models.feature'),
+    official: t('home.comparison.items.models.official'),
+    us: t('home.comparison.items.models.us')
+  },
+  {
+    feature: t('home.comparison.items.management.feature'),
+    official: t('home.comparison.items.management.official'),
+    us: t('home.comparison.items.management.us')
+  },
+  {
+    feature: t('home.comparison.items.stability.feature'),
+    official: t('home.comparison.items.stability.official'),
+    us: t('home.comparison.items.stability.us')
+  },
+  {
+    feature: t('home.comparison.items.control.feature'),
+    official: t('home.comparison.items.control.official'),
+    us: t('home.comparison.items.control.us')
+  }
+])
+
+const faqItems = computed(() => [
+  {
+    question: t('home.faq.items.difference.question'),
+    answer: t('home.faq.items.difference.answer')
+  },
+  {
+    question: t('home.faq.items.compatibility.question'),
+    answer: t('home.faq.items.compatibility.answer')
+  },
+  {
+    question: t('home.faq.items.security.question'),
+    answer: t('home.faq.items.security.answer')
+  },
+  {
+    question: t('home.faq.items.support.question'),
+    answer: t('home.faq.items.support.answer')
+  }
+])
+
+const fallbackOpenAIModels = getModelsByPlatform('openai').map((name) => ({
+  name,
+  platform: 'openai',
+  channel_count: 0
+}))
+
+const displayedSupportedModels = computed(() => (
+  supportedModels.value.length > 0 ? supportedModels.value : fallbackOpenAIModels
+))
+
+async function loadSupportedModels() {
+  modelsLoading.value = true
+  try {
+    const models = await userChannelsAPI.getPublicModels({ platform: 'openai' })
+    supportedModels.value = models
+    modelsFromFallback.value = models.length === 0
+  } catch (err) {
+    console.error('Failed to load public supported models:', err)
+    supportedModels.value = []
+    modelsFromFallback.value = true
+  } finally {
+    modelsLoading.value = false
+  }
+}
 
 // Check if homeContent is a URL (for iframe display)
 const isHomeContentUrl = computed(() => {
@@ -460,6 +816,7 @@ onMounted(() => {
 
   // Check auth state
   authStore.checkAuth()
+  loadSupportedModels()
 
   // Ensure public settings are loaded (will use cache if already loaded from injected config)
   if (!appStore.publicSettingsLoaded) {

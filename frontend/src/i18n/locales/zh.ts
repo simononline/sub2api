@@ -8,15 +8,18 @@ export default {
     switchToDark: '切换到深色模式',
     dashboard: '控制台',
     login: '登录',
+    backToHome: '返回首页',
     getStarted: '立即开始',
     goToDashboard: '进入控制台',
-    // 新增：面向用户的价值主张
-    heroSubtitle: '一个密钥，畅用多个 AI 模型',
-    heroDescription: '无需管理多个订阅账号，一站式接入 Claude、GPT、Gemini 等主流 AI 服务',
+    poolNotice: '我们使用配置大量 PRO 账号构成的号池，保障平台稳定调用和数据承载。',
+    heroBadge: 'GPT 专用 API 服务',
+    heroSubtitle: '一个密钥，稳定接入 GPT',
+    heroDescription: '聚焦 GPT 相关服务，提供 OpenAI 兼容接口、资源池调度、按量计费和工程师支持，适合个人开发、团队工具和自动化工作流。',
     tags: {
-      subscriptionToApi: '订阅转 API',
-      stickySession: '会话保持',
-      realtimeBilling: '按量计费'
+      subscriptionToApi: 'GPT 订阅转 API',
+      stickySession: 'GPT 会话保持',
+      realtimeBilling: '实时用量计费',
+      engineerSupport: '工程师支持'
     },
     // 用户痛点区块
     painPoints: {
@@ -46,12 +49,12 @@ export default {
       subtitle: '简单三步，开始省心使用 AI'
     },
     features: {
-      unifiedGateway: '一键接入',
-      unifiedGatewayDesc: '获取一个 API 密钥，即可调用所有已接入的 AI 模型，无需分别申请。',
-      multiAccount: '稳定可靠',
-      multiAccountDesc: '智能调度多个上游账号，自动切换和负载均衡，告别频繁报错。',
-      balanceQuota: '用多少付多少',
-      balanceQuotaDesc: '按实际使用量计费，支持设置配额上限，团队用量一目了然。'
+      unifiedGateway: 'OpenAI 兼容网关',
+      unifiedGatewayDesc: '保持熟悉的 OpenAI API 调用方式，只需替换 Base URL 和 API Key 即可接入 GPT 服务。',
+      multiAccount: 'GPT 资源池调度',
+      multiAccountDesc: '通过资源池、负载均衡和失败重试降低单账号限流影响，让请求更稳定地完成。',
+      balanceQuota: '按量计费与配额',
+      balanceQuotaDesc: '按实际调用量统计消费，支持余额、额度和用量明细，团队成员成本更容易控制。'
     },
     // 优势对比
     comparison: {
@@ -64,46 +67,124 @@ export default {
       items: {
         pricing: {
           feature: '付费方式',
-          official: '固定月费，用不完也付',
-          us: '按量付费，用多少付多少'
+          official: '固定订阅或独立账单',
+          us: '按量计费，可按需补充额度'
         },
         models: {
-          feature: '模型选择',
-          official: '单一服务商',
-          us: '多模型随意切换'
+          feature: '服务范围',
+          official: '自行对接 GPT 官方服务',
+          us: '聚焦 GPT，统一封装接入与调度'
         },
         management: {
           feature: '账号管理',
-          official: '每个服务单独管理',
-          us: '统一密钥，一站管理'
+          official: '账号、订阅、Key 分开维护',
+          us: '统一密钥，一站管理调用与额度'
         },
         stability: {
           feature: '服务稳定性',
-          official: '单账号易触发限制',
-          us: '多账号池，自动切换'
+          official: '单账号限额需要自行处理',
+          us: '资源池调度、重试和故障切换'
         },
         control: {
           feature: '用量控制',
-          official: '无法限制',
-          us: '可设配额、查明细'
+          official: '需要自行开发统计和限制',
+          us: '可设配额、查明细、看趋势'
         }
       }
     },
     providers: {
-      title: '已支持的 AI 模型',
-      description: '一个 API，多种选择',
+      title: 'GPT 服务范围',
+      description: '当前主页仅展示 GPT 相关能力，避免让用户误以为同时提供 Claude、Gemini 等服务。',
       supported: '已支持',
       soon: '即将推出',
+      gptCore: 'GPT 系列模型接入',
+      gptCoreDesc: '面向 GPT 对话、代码、总结、工具调用等常见场景，统一走稳定 API 入口。',
+      openaiCompatible: 'OpenAI API 兼容',
+      openaiCompatibleDesc: '兼容主流 SDK、低代码工具和自建系统，迁移成本低，调用链路清晰。',
+      usageControl: '额度与用量管理',
+      usageControlDesc: '实时记录请求、Token 与消费明细，可用于个人预算和团队成本分摊。',
       claude: 'Claude',
       gemini: 'Gemini',
       antigravity: 'Antigravity',
       more: '更多'
     },
+    supportedModels: {
+      title: '当前支持的 GPT 模型',
+      description: '模型列表优先从公开接口实时读取，展示当前启用渠道里可承载的 OpenAI / GPT 模型。',
+      loading: '正在查询模型列表...',
+      count: '共 {count} 个模型',
+      live: '来自实时接口',
+      fallback: '接口不可用时展示默认 GPT 白名单',
+      empty: '暂未查询到可展示模型',
+      channelCount: '{count} 条线路'
+    },
+    serviceHighlights: {
+      title: '核心服务保障',
+      description: '参考官方镜像和 API 中转服务的核心诉求，页面突出稳定、速度、安全和支持能力。',
+      items: {
+        pool: {
+          title: '资源池承载',
+          desc: '多上游资源统一调度，减少单点限流、单账号异常对业务请求的影响。'
+        },
+        speed: {
+          title: '稳定高速',
+          desc: '面向 API 场景优化请求链路，适合高频对话、插件调用和自动化任务。'
+        },
+        security: {
+          title: '密钥隔离',
+          desc: '用户只使用平台 Key 调用服务，便于权限收口、额度隔离和风险控制。'
+        },
+        support: {
+          title: '工程师支持',
+          desc: '提供接入排查、SDK 配置、调用报错定位等技术支持，减少上线阻力。'
+        }
+      }
+    },
+    workflow: {
+      title: '三步接入 GPT',
+      description: '从注册到调用保持轻量，适合快速接入现有项目。',
+      steps: {
+        createKey: {
+          title: '创建 API Key',
+          desc: '注册登录后在控制台创建密钥，并按业务场景设置可用额度。'
+        },
+        callApi: {
+          title: '替换接入地址',
+          desc: '在 OpenAI SDK 或兼容工具中替换 Base URL，继续使用熟悉的请求格式。'
+        },
+        monitor: {
+          title: '查看用量与成本',
+          desc: '通过控制台追踪请求量、Token、余额和消费趋势，及时调整配额。'
+        }
+      }
+    },
+    faq: {
+      title: '常见问题',
+      description: '围绕 GPT API 接入、兼容性、安全和支持的高频问题。',
+      items: {
+        difference: {
+          question: '和直接使用官方 GPT 有什么区别？',
+          answer: '底层仍面向 GPT 能力，平台侧提供统一密钥、资源池调度、用量统计和额度管理，减少自行维护账号与接入链路的成本。'
+        },
+        compatibility: {
+          question: '现有 OpenAI SDK 能直接用吗？',
+          answer: '页面定位为 OpenAI 兼容网关，通常只需要替换 Base URL 和 API Key；具体参数以你的服务配置和文档为准。'
+        },
+        security: {
+          question: '账号和密钥如何隔离？',
+          answer: '用户侧仅持有平台 API Key，可通过控制台管理额度和状态，避免把上游账号分散到多个项目里。'
+        },
+        support: {
+          question: '接入报错时如何处理？',
+          answer: '可结合请求日志、额度记录和技术支持定位问题，包括模型参数、网络链路、密钥权限和上游响应。'
+        }
+      }
+    },
     // CTA 区块
     cta: {
-      title: '准备好开始了吗？',
-      description: '注册即可获得免费试用额度，体验一站式 AI 服务',
-      button: '免费注册'
+      title: '准备接入 GPT API？',
+      description: '保留现有网关、计费和用量能力，同时把首页信息聚焦到 GPT 服务，让用户一眼知道当前可用范围。',
+      button: '开始使用'
     },
     footer: {
       allRightsReserved: '保留所有权利。'
@@ -345,6 +426,7 @@ export default {
     announcements: '公告',
     apiKeys: 'API 密钥',
     usage: '使用记录',
+    leaderboard: '排行榜',
     redeem: '兑换',
     affiliate: '邀请返利',
     profile: '个人资料',
@@ -604,7 +686,17 @@ export default {
     viewUsage: '查看使用记录',
     checkDetailedLogs: '查看详细的使用日志',
     redeemCode: '兑换码',
-    addBalanceWithCode: '使用兑换码充值'
+    addBalanceWithCode: '使用兑换码充值',
+    availableModels: '可用模型',
+    availableModelsCount: '{count} 个模型',
+    availableModelsLoading: '正在查询 /v1/models...',
+    availableModelsSummary: '基于 {keys} 个活跃 API Key，查询 {groups} 个分组',
+    availableModelsNoKeysSummary: '暂无活跃 API Key',
+    availableModelsLoadFailed: '模型列表加载失败，请稍后重试。',
+    availableModelsPartialFailed: '{count} 个分组查询失败，已展示可成功查询的模型。',
+    noActiveApiKeys: '暂无活跃 API Key',
+    createKeyForModels: '创建并启用 API Key 后可查看当前可用模型。',
+    noAvailableModels: '暂未查询到可用模型'
   },
 
   // Groups (shared)
@@ -974,6 +1066,58 @@ export default {
       intervals: '阶梯定价',
       unitPerMillion: '/ 1M token',
       unitPerRequest: '/ 次'
+    }
+  },
+
+  leaderboard: {
+    title: '排行榜',
+    description: '查看用户消费排行榜',
+    descriptionMasked: '当前账号以普通用户身份查看，榜单账号已打码，仅展示排行、消费、请求数与 Token 汇总。',
+    descriptionAdmin: '当前账号以管理员身份查看，榜单展示真实用户账号与完整排行数据。',
+    badge: 'Usage Leaderboard',
+    startDate: '开始日期',
+    endDate: '结束日期',
+    limit: '数量',
+    presets: {
+      sevenDays: '近 7 天',
+      thirtyDays: '近 30 天',
+      ninetyDays: '近 90 天'
+    },
+    totalSpend: '总消费',
+    totalRequests: '总请求',
+    totalTokens: '总 Token',
+    accountBalance: '账户余额',
+    currentAccount: '当前账号',
+    currentPackage: '当前套餐',
+    packageCountdown: '套餐倒计时',
+    loadingPackage: '套餐加载中',
+    noActivePackage: '暂无套餐',
+    noActivePackageHint: '当前没有生效中的套餐',
+    activePackageCount: '{count} 个生效中套餐',
+    morePackages: '+{count} 个',
+    noExpiration: '长期有效',
+    expiresOn: '{plan} 到期时间：{date}',
+    countdownExpired: '已到期',
+    countdownDaysHours: '{days} 天 {hours} 小时',
+    countdownHoursMinutes: '{hours} 小时 {minutes} 分钟',
+    countdownMinutes: '{minutes} 分钟',
+    countdownLessThanMinute: '不足 1 分钟',
+    listTitle: '消费排行',
+    rangeLabel: '{start} 至 {end}，最多显示前 {limit} 名',
+    maskedAccounts: '账号已打码',
+    realAccounts: '真实账号',
+    accountMaskedHint: '普通用户视图',
+    accountRealHint: '管理员视图',
+    invalidRange: '开始日期不能晚于结束日期',
+    loadError: '加载排行榜失败',
+    emptyTitle: '暂无排行数据',
+    emptyDescription: '当前时间范围内还没有可展示的使用记录。',
+    columns: {
+      rank: '排名',
+      account: '账号',
+      spend: '消费',
+      requests: '请求数',
+      tokens: 'Token'
     }
   },
 

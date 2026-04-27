@@ -1,5 +1,16 @@
 <template>
   <AuthLayout>
+    <template #topRight>
+      <router-link
+        to="/home"
+        class="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white/80 px-3 py-2 text-sm font-medium text-gray-600 shadow-sm backdrop-blur-sm transition-colors hover:border-primary-400 hover:text-gray-950 dark:border-dark-700 dark:bg-dark-950/80 dark:text-dark-300 dark:hover:border-primary-400 dark:hover:text-dark-50"
+        :title="t('home.backToHome')"
+      >
+        <Icon name="home" size="sm" />
+        <span>{{ t('home.backToHome') }}</span>
+      </router-link>
+    </template>
+
     <div class="space-y-6">
       <!-- Title -->
       <div class="text-center">

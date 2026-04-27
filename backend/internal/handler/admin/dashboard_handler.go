@@ -10,6 +10,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/timezone"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/usagestats"
+	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -490,13 +491,8 @@ func parseRankingLimit(raw string) int {
 	return limit
 }
 
-// GetUserSpendingRanking handles getting user spending ranking data.
-// GET /api/v1/admin/dashboard/users-ranking
-func (h *DashboardHandler) GetUserSpendingRanking(c *gin.Context) {
-	startTime, endTime := parseTimeRange(c)
-	limit := parseRankingLimit(c.DefaultQuery("limit", "12"))
-
-	keyRaw, _ := json.Marshal(struct {
+func (h *DashboardHandler) getUserSpendingRankingCached(ctx *gin.Context, startTime, endTime time.Time, limit int) (*usagestats.UserSpendingRankingResponse, bool, error) {
+	cacheKey := mustMarshalDashboardCacheKey(struct {
 		Start string `json:"start"`
 		End   string `json:"end"`
 		Limit int    `json:"limit"`
@@ -505,30 +501,116 @@ func (h *DashboardHandler) GetUserSpendingRanking(c *gin.Context) {
 		End:   endTime.UTC().Format(time.RFC3339),
 		Limit: limit,
 	})
-	cacheKey := string(keyRaw)
-	if cached, ok := dashboardUsersRankingCache.Get(cacheKey); ok {
-		c.Header("X-Snapshot-Cache", "hit")
-		response.Success(c, cached.Payload)
-		return
+
+	entry, hit, err := dashboardUsersRankingCache.GetOrLoad(cacheKey, func() (any, error) {
+		return h.dashboardService.GetUserSpendingRanking(ctx.Request.Context(), startTime, endTime, limit)
+	})
+	if err != nil {
+		return nil, hit, err
 	}
 
-	ranking, err := h.dashboardService.GetUserSpendingRanking(c.Request.Context(), startTime, endTime, limit)
+	ranking, err := snapshotPayloadAs[*usagestats.UserSpendingRankingResponse](entry.Payload)
+	if err != nil {
+		return nil, hit, err
+	}
+	if ranking == nil {
+		ranking = &usagestats.UserSpendingRankingResponse{}
+	}
+	return ranking, hit, nil
+}
+
+func maskLeaderboardAccount(account string) string {
+	account = strings.TrimSpace(account)
+	if account == "" {
+		return "****"
+	}
+	at := strings.LastIndex(account, "@")
+	if at > 0 {
+		local := maskLeaderboardSegment(account[:at])
+		domain := account[at+1:]
+		dot := strings.LastIndex(domain, ".")
+		if dot > 0 {
+			return local + "@" + maskLeaderboardSegment(domain[:dot]) + domain[dot:]
+		}
+		return local + "@" + maskLeaderboardSegment(domain)
+	}
+	return maskLeaderboardSegment(account)
+}
+
+func maskLeaderboardSegment(value string) string {
+	runes := []rune(strings.TrimSpace(value))
+	switch len(runes) {
+	case 0:
+		return "****"
+	case 1:
+		return string(runes[0]) + "***"
+	case 2:
+		return string(runes[0]) + "***" + string(runes[1])
+	default:
+		return string(runes[0]) + "***" + string(runes[len(runes)-1])
+	}
+}
+
+func buildUserSpendingRankingPayload(ranking *usagestats.UserSpendingRankingResponse, startTime, endTime time.Time, maskAccounts bool) gin.H {
+	rows := make([]usagestats.UserSpendingRankingItem, 0)
+	if ranking != nil {
+		rows = make([]usagestats.UserSpendingRankingItem, len(ranking.Ranking))
+		copy(rows, ranking.Ranking)
+	}
+	if maskAccounts {
+		for i := range rows {
+			rows[i].Email = maskLeaderboardAccount(rows[i].Email)
+			rows[i].UserID = 0
+		}
+	}
+
+	totalActualCost := 0.0
+	totalRequests := int64(0)
+	totalTokens := int64(0)
+	if ranking != nil {
+		totalActualCost = ranking.TotalActualCost
+		totalRequests = ranking.TotalRequests
+		totalTokens = ranking.TotalTokens
+	}
+
+	return gin.H{
+		"ranking":           rows,
+		"total_actual_cost": totalActualCost,
+		"total_requests":    totalRequests,
+		"total_tokens":      totalTokens,
+		"start_date":        startTime.Format("2006-01-02"),
+		"end_date":          endTime.Add(-24 * time.Hour).Format("2006-01-02"),
+		"masked_accounts":   maskAccounts,
+	}
+}
+
+func (h *DashboardHandler) respondUserSpendingRanking(c *gin.Context, maskAccounts bool) {
+	startTime, endTime := parseTimeRange(c)
+	limit := parseRankingLimit(c.DefaultQuery("limit", "12"))
+
+	ranking, hit, err := h.getUserSpendingRankingCached(c, startTime, endTime, limit)
 	if err != nil {
 		response.Error(c, 500, "Failed to get user spending ranking")
 		return
 	}
 
-	payload := gin.H{
-		"ranking":           ranking.Ranking,
-		"total_actual_cost": ranking.TotalActualCost,
-		"total_requests":    ranking.TotalRequests,
-		"total_tokens":      ranking.TotalTokens,
-		"start_date":        startTime.Format("2006-01-02"),
-		"end_date":          endTime.Add(-24 * time.Hour).Format("2006-01-02"),
-	}
-	dashboardUsersRankingCache.Set(cacheKey, payload)
-	c.Header("X-Snapshot-Cache", "miss")
+	payload := buildUserSpendingRankingPayload(ranking, startTime, endTime, maskAccounts)
+	c.Header("X-Snapshot-Cache", cacheStatusValue(hit))
 	response.Success(c, payload)
+}
+
+// GetUserSpendingRanking handles getting admin user spending ranking data.
+// GET /api/v1/admin/dashboard/users-ranking
+func (h *DashboardHandler) GetUserSpendingRanking(c *gin.Context) {
+	h.respondUserSpendingRanking(c, false)
+}
+
+// GetViewerUserSpendingRanking handles getting user spending ranking data for any authenticated viewer.
+// Admin viewers receive full accounts; regular users receive masked accounts.
+// GET /api/v1/usage/dashboard/users-ranking
+func (h *DashboardHandler) GetViewerUserSpendingRanking(c *gin.Context) {
+	role, _ := middleware.GetUserRoleFromContext(c)
+	h.respondUserSpendingRanking(c, role != service.RoleAdmin)
 }
 
 // GetBatchUsersUsage handles getting usage stats for multiple users

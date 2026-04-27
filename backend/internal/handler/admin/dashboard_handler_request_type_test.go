@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/usagestats"
+	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
@@ -74,6 +75,14 @@ func newDashboardRequestTypeTestRouter(repo *dashboardUsageRepoCapture) *gin.Eng
 	router.GET("/admin/dashboard/trend", handler.GetUsageTrend)
 	router.GET("/admin/dashboard/models", handler.GetModelStats)
 	router.GET("/admin/dashboard/users-ranking", handler.GetUserSpendingRanking)
+	router.GET("/usage/dashboard/users-ranking", func(c *gin.Context) {
+		c.Set(string(middleware.ContextKeyUserRole), service.RoleUser)
+		handler.GetViewerUserSpendingRanking(c)
+	})
+	router.GET("/usage/dashboard/users-ranking-admin", func(c *gin.Context) {
+		c.Set(string(middleware.ContextKeyUserRole), service.RoleAdmin)
+		handler.GetViewerUserSpendingRanking(c)
+	})
 	return router
 }
 
@@ -198,4 +207,34 @@ func TestDashboardUsersRankingLimitAndCache(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, rec2.Code)
 	require.Equal(t, "hit", rec2.Header().Get("X-Snapshot-Cache"))
+}
+
+func TestDashboardViewerUsersRankingMasksRegularUsersOnly(t *testing.T) {
+	dashboardUsersRankingCache = newSnapshotCache(5 * time.Minute)
+	repo := &dashboardUsageRepoCapture{
+		ranking: []usagestats.UserSpendingRankingItem{
+			{UserID: 7, Email: "alpha@example.com", ActualCost: 10.5, Requests: 3, Tokens: 300},
+		},
+		rankingTotal: 10.5,
+	}
+	router := newDashboardRequestTypeTestRouter(repo)
+
+	req := httptest.NewRequest(http.MethodGet, "/usage/dashboard/users-ranking?start_date=2025-01-01&end_date=2025-01-02", nil)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	require.Contains(t, rec.Body.String(), "\"masked_accounts\":true")
+	require.Contains(t, rec.Body.String(), "a***a@e***e.com")
+	require.NotContains(t, rec.Body.String(), "alpha@example.com")
+	require.NotContains(t, rec.Body.String(), "\"user_id\":7")
+
+	adminReq := httptest.NewRequest(http.MethodGet, "/usage/dashboard/users-ranking-admin?start_date=2025-01-01&end_date=2025-01-02", nil)
+	adminRec := httptest.NewRecorder()
+	router.ServeHTTP(adminRec, adminReq)
+
+	require.Equal(t, http.StatusOK, adminRec.Code)
+	require.Contains(t, adminRec.Body.String(), "\"masked_accounts\":false")
+	require.Contains(t, adminRec.Body.String(), "alpha@example.com")
+	require.Contains(t, adminRec.Body.String(), "\"user_id\":7")
 }

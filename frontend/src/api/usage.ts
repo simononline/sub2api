@@ -10,7 +10,8 @@ import type {
   UsageStatsResponse,
   PaginatedResponse,
   TrendDataPoint,
-  ModelStat
+  ModelStat,
+  UserSpendingRankingResponse
 } from '@/types'
 
 // ==================== Dashboard Types ====================
@@ -56,6 +57,10 @@ export interface ModelStatsResponse {
   models: ModelStat[]
   start_date: string
   end_date: string
+}
+
+export interface UserSpendingRankingParams extends Pick<TrendParams, 'start_date' | 'end_date'> {
+  limit?: number
 }
 
 /**
@@ -223,6 +228,19 @@ export async function getDashboardModels(params?: {
   return data
 }
 
+/**
+ * Get user spending leaderboard for the current viewer.
+ * Admin viewers receive full accounts; regular users receive masked accounts.
+ */
+export async function getDashboardUsersRanking(
+  params?: UserSpendingRankingParams
+): Promise<UserSpendingRankingResponse> {
+  const { data } = await apiClient.get<UserSpendingRankingResponse>('/usage/dashboard/users-ranking', {
+    params
+  })
+  return data
+}
+
 export interface BatchApiKeyUsageStats {
   api_key_id: number
   today_actual_cost: number
@@ -268,6 +286,7 @@ export const usageAPI = {
   getDashboardStats,
   getDashboardTrend,
   getDashboardModels,
+  getDashboardUsersRanking,
   getDashboardApiKeysUsage
 }
 

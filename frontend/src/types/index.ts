@@ -1372,6 +1372,7 @@ export interface UserSpendingRankingResponse {
   total_tokens: number
   start_date: string
   end_date: string
+  masked_accounts?: boolean
 }
 
 export interface ApiKeyUsageTrendPoint {

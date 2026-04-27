@@ -63,6 +63,12 @@ export interface UserAvailableChannel {
   platforms: UserChannelPlatformSection[]
 }
 
+export interface PublicSupportedModel {
+  name: string
+  platform: string
+  channel_count: number
+}
+
 /** 列出当前用户可见的「可用渠道」（与 /groups/available 保持一致，返回平数组）。 */
 export async function getAvailable(options?: { signal?: AbortSignal }): Promise<UserAvailableChannel[]> {
   const { data } = await apiClient.get<UserAvailableChannel[]>('/channels/available', {
@@ -71,6 +77,18 @@ export async function getAvailable(options?: { signal?: AbortSignal }): Promise<
   return data
 }
 
-export const userChannelsAPI = { getAvailable }
+/** 首页公开展示的支持模型列表，不需要登录。 */
+export async function getPublicModels(options?: {
+  platform?: string
+  signal?: AbortSignal
+}): Promise<PublicSupportedModel[]> {
+  const { data } = await apiClient.get<PublicSupportedModel[]>('/channels/public-models', {
+    params: options?.platform ? { platform: options.platform } : undefined,
+    signal: options?.signal
+  })
+  return data
+}
+
+export const userChannelsAPI = { getAvailable, getPublicModels }
 
 export default userChannelsAPI

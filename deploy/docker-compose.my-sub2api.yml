@@ -10,12 +10,18 @@ services:
     container_name: my-sub2api-frontend
     restart: unless-stopped
     ports:
-      - "${BIND_HOST:-0.0.0.0}:${SERVER_PORT:-9999}:80"
+      - "${BIND_HOST:-0.0.0.0}:${SERVER_PORT:-8080}:80"
     depends_on:
       backend:
         condition: service_healthy
     networks:
       - my-sub2api-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-T", "3", "-O", "/dev/null", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   backend:
     image: ${BACKEND_IMAGE:-my-sub2api-backend:local}

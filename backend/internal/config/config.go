@@ -957,17 +957,23 @@ type DatabaseConfig struct {
 	ConnMaxIdleTimeMinutes int `mapstructure:"conn_max_idle_time_minutes"`
 }
 
+func postgresKeywordValue(value string) string {
+	escaped := strings.ReplaceAll(value, `\`, `\\`)
+	escaped = strings.ReplaceAll(escaped, `'`, `\'`)
+	return "'" + escaped + "'"
+}
+
 func (d *DatabaseConfig) DSN() string {
 	// 当密码为空时不包含 password 参数，避免 libpq 解析错误
 	if d.Password == "" {
 		return fmt.Sprintf(
 			"host=%s port=%d user=%s dbname=%s sslmode=%s",
-			d.Host, d.Port, d.User, d.DBName, d.SSLMode,
+			postgresKeywordValue(d.Host), d.Port, postgresKeywordValue(d.User), postgresKeywordValue(d.DBName), postgresKeywordValue(d.SSLMode),
 		)
 	}
 	return fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		d.Host, d.Port, d.User, d.Password, d.DBName, d.SSLMode,
+		postgresKeywordValue(d.Host), d.Port, postgresKeywordValue(d.User), postgresKeywordValue(d.Password), postgresKeywordValue(d.DBName), postgresKeywordValue(d.SSLMode),
 	)
 }
 
@@ -980,12 +986,12 @@ func (d *DatabaseConfig) DSNWithTimezone(tz string) string {
 	if d.Password == "" {
 		return fmt.Sprintf(
 			"host=%s port=%d user=%s dbname=%s sslmode=%s TimeZone=%s",
-			d.Host, d.Port, d.User, d.DBName, d.SSLMode, tz,
+			postgresKeywordValue(d.Host), d.Port, postgresKeywordValue(d.User), postgresKeywordValue(d.DBName), postgresKeywordValue(d.SSLMode), postgresKeywordValue(tz),
 		)
 	}
 	return fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s TimeZone=%s",
-		d.Host, d.Port, d.User, d.Password, d.DBName, d.SSLMode, tz,
+		postgresKeywordValue(d.Host), d.Port, postgresKeywordValue(d.User), postgresKeywordValue(d.Password), postgresKeywordValue(d.DBName), postgresKeywordValue(d.SSLMode), postgresKeywordValue(tz),
 	)
 }
 

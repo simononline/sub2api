@@ -241,7 +241,7 @@ func (s *OpenAIOAuthServiceSuite) TestContextCancel() {
 }
 
 func (s *OpenAIOAuthServiceSuite) TestExchangeCode_UsesProvidedRedirectURI() {
-	want := "http://localhost:9999/cb"
+	want := "http://localhost:8080/cb"
 	errCh := make(chan string, 1)
 	s.setupServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_ = r.ParseForm()
