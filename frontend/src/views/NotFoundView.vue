@@ -1,14 +1,11 @@
 <template>
   <div
-    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-4 dark:bg-dark-950"
+    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-4 dark:bg-dark-900"
   >
-    <!-- Background Decoration -->
+    <!-- Background Texture -->
     <div class="pointer-events-none absolute inset-0 overflow-hidden">
       <div
-        class="absolute -right-40 -top-40 h-80 w-80 rounded-full bg-primary-400/10 blur-3xl"
-      ></div>
-      <div
-        class="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-primary-500/10 blur-3xl"
+        class="absolute inset-0 bg-mesh-gradient bg-[size:72px_72px] opacity-70"
       ></div>
     </div>
 
@@ -16,15 +13,15 @@
       <!-- 404 Display -->
       <div class="mb-8">
         <div class="relative inline-block">
-          <span class="text-[12rem] font-bold leading-none text-gray-100 dark:text-dark-800"
+          <span class="text-[12rem] font-normal leading-none text-gray-100 dark:text-dark-800"
             >404</span
           >
           <div class="absolute inset-0 flex items-center justify-center">
             <div
-              class="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30"
+              class="flex h-24 w-24 items-center justify-center rounded-lg border border-primary-500/30 bg-primary-500/10 text-primary-600 dark:text-primary-400"
             >
               <svg
-                class="h-12 w-12 text-white"
+                class="h-12 w-12"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -43,7 +40,7 @@
 
       <!-- Text Content -->
       <div class="mb-8">
-        <h1 class="mb-3 text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 class="mb-3 text-2xl font-normal text-gray-900 dark:text-white">
           {{ t('errors.pageNotFound') }}
         </h1>
         <p class="text-gray-500 dark:text-dark-400">

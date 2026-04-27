@@ -1,16 +1,16 @@
 <template>
   <div
-    class="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4 dark:from-dark-900 dark:to-dark-800"
+    class="flex min-h-screen items-center justify-center bg-gray-50 p-4 dark:bg-dark-900"
   >
     <div class="w-full max-w-2xl">
       <!-- Logo & Title -->
       <div class="mb-8 text-center">
         <div
-          class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg"
+          class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-lg border border-primary-500/30 bg-primary-500/10 text-primary-600 dark:text-primary-400"
         >
-          <Icon name="cog" size="xl" class="text-white" />
+          <Icon name="cog" size="xl" />
         </div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ t('setup.title') }}</h1>
+        <h1 class="text-3xl font-normal text-gray-900 dark:text-white">{{ t('setup.title') }}</h1>
         <p class="mt-2 text-gray-500 dark:text-dark-400">{{ t('setup.description') }}</p>
       </div>
 
@@ -21,7 +21,7 @@
             <div class="flex items-center">
               <div
                 :class="[
-                  'flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-all',
+                  'flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-all',
                   currentStep > index
                     ? 'bg-primary-500 text-white'
                     : currentStep === index
@@ -58,7 +58,7 @@
       </div>
 
       <!-- Step Content -->
-      <div class="rounded-2xl bg-white p-8 shadow-xl dark:bg-dark-800">
+      <div class="card p-8">
         <!-- Step 1: Database -->
         <div v-if="currentStep === 0" class="space-y-6">
           <div class="mb-6 text-center">
@@ -131,7 +131,7 @@
                 v-model="formData.database.dbname"
                 type="text"
                 class="input"
-                placeholder="sub2api"
+                placeholder="weshare"
               />
             </div>
             <div>
@@ -535,7 +535,7 @@ const formData = reactive<InstallRequest>({
     port: 5432,
     user: 'postgres',
     password: '',
-    dbname: 'sub2api',
+    dbname: 'weshare',
     sslmode: 'disable'
   },
   redis: {

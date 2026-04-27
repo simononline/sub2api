@@ -31,11 +31,11 @@
         <div
           v-if="dropdownOpen"
           ref="dropdownRef"
-          class="absolute left-0 z-50 mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-dark-700 dark:bg-dark-800"
+          class="absolute left-0 z-50 mt-2 w-64 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-dark-800 dark:bg-dark-950"
         >
           <!-- Header with refresh button -->
           <div
-            class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-dark-700"
+            class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-dark-800"
           >
             <span class="text-sm font-medium text-gray-700 dark:text-dark-300">{{
               t('version.currentVersion')

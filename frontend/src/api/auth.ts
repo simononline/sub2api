@@ -333,7 +333,11 @@ export function isAuthenticated(): boolean {
  */
 export async function getPublicSettings(): Promise<PublicSettings> {
   const { data } = await apiClient.get<PublicSettings>('/settings/public')
-  return data
+  const siteName = data.site_name?.trim()
+  return {
+    ...data,
+    site_name: !siteName || siteName.toLowerCase() === 'sub2api' ? 'WeShare' : siteName
+  }
 }
 
 export type WeChatOAuthMode = 'open' | 'mp'
