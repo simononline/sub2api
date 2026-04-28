@@ -25,6 +25,8 @@ COMPOSE_FILE="${COMPOSE_FILE:-$ROOT_DIR/deploy/docker-compose.my-sub2api.yml}"
 ENV_FILE="${ENV_FILE:-$ROOT_DIR/deploy/.env}"
 DIST_DIR="${DIST_DIR:-$ROOT_DIR/dist}"
 INCLUDE_ENV="${INCLUDE_ENV:-auto}"
+BUILD_BACKEND="${BUILD_BACKEND:-1}"
+BUILD_FRONTEND="${BUILD_FRONTEND:-1}"
 
 REMOTE_USER="${REMOTE_USER:-ubuntu}"
 REMOTE_HOST="${REMOTE_HOST:-43.160.239.168}"
@@ -69,6 +71,8 @@ Common variables:
   DIST_DIR=$ROOT_DIR/dist
   PACKAGE_PATH=$PACKAGE_PATH
   INCLUDE_ENV=auto|1|0              默认 auto：存在 deploy/.env 时打进包里
+  BUILD_BACKEND=1|0                 默认 1；只改前端/nginx 时可设为 0 跳过后端构建
+  BUILD_FRONTEND=1|0                默认 1；只改后端时可设为 0 跳过前端构建
 
 Remote variables:
   REMOTE_USER=$REMOTE_USER
@@ -110,6 +114,20 @@ image_matches_platform() {
     return 1
 }
 
+is_enabled() {
+    case "$1" in
+        1|true|yes|on)
+            return 0
+            ;;
+        0|false|no|off)
+            return 1
+            ;;
+        *)
+            die "$2 只能是 1|0"
+            ;;
+    esac
+}
+
 ensure_base_image_once() {
     target_image="$1"
     source_image="$2"
@@ -139,12 +157,11 @@ rebuild_image() {
 
     log "检查 ${label} 镜像: ${image}"
     if image_exists "$image"; then
-        log "删除已存在的 ${label} 镜像: ${image}"
-        docker rmi "$image"
+        log "${label} 镜像已存在，将复用 Docker 构建缓存并覆盖标签: ${image}"
     fi
 
     log "重新构建 ${label} 镜像: ${image}"
-    docker build \
+    DOCKER_BUILDKIT="${DOCKER_BUILDKIT:-1}" docker build \
         --platform "$PLATFORM" \
         -f "$dockerfile" \
         -t "$image" \
@@ -163,14 +180,24 @@ build_images() {
     ensure_base_image_once "$SQL_IMAGE" "$POSTGRES_SOURCE_IMAGE" "PostgreSQL"
     ensure_base_image_once "$REDIS_IMAGE" "$REDIS_SOURCE_IMAGE" "Redis"
 
-    rebuild_image "$BACKEND_IMAGE" "$ROOT_DIR/deploy/Dockerfile.backend" "backend" \
-        --build-arg "VERSION=${VERSION}" \
-        --build-arg "COMMIT=${COMMIT}" \
-        --build-arg "DATE=${DATE}" \
-        --build-arg "GOPROXY=${GOPROXY}" \
-        --build-arg "GOSUMDB=${GOSUMDB}"
+    if is_enabled "$BUILD_BACKEND" "BUILD_BACKEND"; then
+        rebuild_image "$BACKEND_IMAGE" "$ROOT_DIR/deploy/Dockerfile.backend" "backend" \
+            --build-arg "VERSION=${VERSION}" \
+            --build-arg "COMMIT=${COMMIT}" \
+            --build-arg "DATE=${DATE}" \
+            --build-arg "GOPROXY=${GOPROXY}" \
+            --build-arg "GOSUMDB=${GOSUMDB}"
+    else
+        image_exists "$BACKEND_IMAGE" || die "BUILD_BACKEND=0，但本地不存在 backend 镜像: ${BACKEND_IMAGE}"
+        log "跳过 backend 镜像构建，复用本地镜像: ${BACKEND_IMAGE}"
+    fi
 
-    rebuild_image "$FRONTEND_IMAGE" "$ROOT_DIR/deploy/Dockerfile.frontend" "frontend"
+    if is_enabled "$BUILD_FRONTEND" "BUILD_FRONTEND"; then
+        rebuild_image "$FRONTEND_IMAGE" "$ROOT_DIR/deploy/Dockerfile.frontend" "frontend"
+    else
+        image_exists "$FRONTEND_IMAGE" || die "BUILD_FRONTEND=0，但本地不存在 frontend 镜像: ${FRONTEND_IMAGE}"
+        log "跳过 frontend 镜像构建，复用本地镜像: ${FRONTEND_IMAGE}"
+    fi
 
     log "镜像创建完成:"
     log "  SQL      ${SQL_IMAGE}"

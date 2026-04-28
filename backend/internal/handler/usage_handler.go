@@ -30,6 +30,30 @@ func NewUsageHandler(usageService *service.UsageService, apiKeyService *service.
 	}
 }
 
+func resolveUsageTargetUserID(c *gin.Context, subject middleware2.AuthSubject) (int64, bool) {
+	targetUserID := subject.UserID
+	userIDStr := strings.TrimSpace(c.Query("user_id"))
+	if userIDStr == "" {
+		return targetUserID, true
+	}
+
+	parsedUserID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil || parsedUserID <= 0 {
+		response.BadRequest(c, "Invalid user_id")
+		return 0, false
+	}
+	if parsedUserID == subject.UserID {
+		return parsedUserID, true
+	}
+
+	role, _ := middleware2.GetUserRoleFromContext(c)
+	if role != service.RoleAdmin {
+		response.Forbidden(c, "Not authorized to access this user's usage records")
+		return 0, false
+	}
+	return parsedUserID, true
+}
+
 // List handles listing usage records with pagination
 // GET /api/v1/usage
 func (h *UsageHandler) List(c *gin.Context) {
@@ -40,6 +64,10 @@ func (h *UsageHandler) List(c *gin.Context) {
 	}
 
 	page, pageSize := response.ParsePagination(c)
+	targetUserID, ok := resolveUsageTargetUserID(c, subject)
+	if !ok {
+		return
+	}
 
 	var apiKeyID int64
 	if apiKeyIDStr := c.Query("api_key_id"); apiKeyIDStr != "" {
@@ -55,7 +83,7 @@ func (h *UsageHandler) List(c *gin.Context) {
 			response.ErrorFrom(c, err)
 			return
 		}
-		if apiKey.UserID != subject.UserID {
+		if apiKey.UserID != targetUserID {
 			response.Forbidden(c, "Not authorized to access this API key's usage records")
 			return
 		}
@@ -126,7 +154,7 @@ func (h *UsageHandler) List(c *gin.Context) {
 		SortOrder: c.DefaultQuery("sort_order", "desc"),
 	}
 	filters := usagestats.UsageLogFilters{
-		UserID:      subject.UserID, // Always filter by current user for security
+		UserID:      targetUserID,
 		APIKeyID:    apiKeyID,
 		Model:       model,
 		RequestType: requestType,
@@ -189,6 +217,10 @@ func (h *UsageHandler) Stats(c *gin.Context) {
 	}
 
 	var apiKeyID int64
+	targetUserID, ok := resolveUsageTargetUserID(c, subject)
+	if !ok {
+		return
+	}
 	if apiKeyIDStr := c.Query("api_key_id"); apiKeyIDStr != "" {
 		id, err := strconv.ParseInt(apiKeyIDStr, 10, 64)
 		if err != nil {
@@ -202,7 +234,7 @@ func (h *UsageHandler) Stats(c *gin.Context) {
 			response.NotFound(c, "API key not found")
 			return
 		}
-		if apiKey.UserID != subject.UserID {
+		if apiKey.UserID != targetUserID {
 			response.Forbidden(c, "Not authorized to access this API key's statistics")
 			return
 		}
@@ -255,7 +287,7 @@ func (h *UsageHandler) Stats(c *gin.Context) {
 	if apiKeyID > 0 {
 		stats, err = h.usageService.GetStatsByAPIKey(c.Request.Context(), apiKeyID, startTime, endTime)
 	} else {
-		stats, err = h.usageService.GetStatsByUser(c.Request.Context(), subject.UserID, startTime, endTime)
+		stats, err = h.usageService.GetStatsByUser(c.Request.Context(), targetUserID, startTime, endTime)
 	}
 	if err != nil {
 		response.ErrorFrom(c, err)

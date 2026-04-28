@@ -32,12 +32,19 @@ func (s *userUsageRepoCapture) ListWithFilters(ctx context.Context, params pagin
 }
 
 func newUserUsageRequestTypeTestRouter(repo *userUsageRepoCapture) *gin.Engine {
+	return newUserUsageRequestTypeTestRouterWithRole(repo, "")
+}
+
+func newUserUsageRequestTypeTestRouterWithRole(repo *userUsageRepoCapture, role string) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	usageSvc := service.NewUsageService(repo, nil, nil, nil)
 	handler := NewUsageHandler(usageSvc, nil)
 	router := gin.New()
 	router.Use(func(c *gin.Context) {
 		c.Set(string(middleware2.ContextKeyUser), middleware2.AuthSubject{UserID: 42})
+		if role != "" {
+			c.Set(string(middleware2.ContextKeyUserRole), role)
+		}
 		c.Next()
 	})
 	router.GET("/usage", handler.List)
@@ -79,4 +86,39 @@ func TestUserUsageListInvalidStream(t *testing.T) {
 	router.ServeHTTP(rec, req)
 
 	require.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestUserUsageListAdminCanFilterUser(t *testing.T) {
+	repo := &userUsageRepoCapture{}
+	router := newUserUsageRequestTypeTestRouterWithRole(repo, service.RoleAdmin)
+
+	req := httptest.NewRequest(http.MethodGet, "/usage?user_id=99", nil)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	require.Equal(t, int64(99), repo.listFilters.UserID)
+}
+
+func TestUserUsageListRegularUserCannotFilterOtherUser(t *testing.T) {
+	repo := &userUsageRepoCapture{}
+	router := newUserUsageRequestTypeTestRouterWithRole(repo, service.RoleUser)
+
+	req := httptest.NewRequest(http.MethodGet, "/usage?user_id=99", nil)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusForbidden, rec.Code)
+}
+
+func TestUserUsageListRegularUserCanFilterSelf(t *testing.T) {
+	repo := &userUsageRepoCapture{}
+	router := newUserUsageRequestTypeTestRouterWithRole(repo, service.RoleUser)
+
+	req := httptest.NewRequest(http.MethodGet, "/usage?user_id=42", nil)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	require.Equal(t, int64(42), repo.listFilters.UserID)
 }

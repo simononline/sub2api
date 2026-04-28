@@ -90,6 +90,46 @@
         <div class="card">
           <div class="px-6 py-4">
           <div class="flex flex-wrap items-end gap-4">
+            <!-- User Filter (Admin Only) -->
+            <div v-if="authStore.isAdmin" class="relative min-w-[220px]">
+              <label class="input-label">{{ t('admin.usage.userFilter') }}</label>
+              <input
+                v-model="userKeyword"
+                type="text"
+                class="input pr-8"
+                :placeholder="t('admin.usage.searchUserPlaceholder')"
+                @input="debounceUserSearch"
+                @focus="showUserDropdown = true"
+                @blur="hideUserDropdownDelayed"
+              />
+              <button
+                v-if="filters.user_id"
+                type="button"
+                class="absolute right-2 top-9 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                :aria-label="t('common.reset')"
+                @mousedown.prevent
+                @click="clearUserFilter"
+              >
+                <Icon name="x" size="sm" />
+              </button>
+              <div
+                v-if="showUserDropdown && userResults.length > 0"
+                class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-dark-600 dark:bg-dark-800"
+              >
+                <button
+                  v-for="user in userResults"
+                  :key="user.id"
+                  type="button"
+                  class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
+                  @mousedown.prevent
+                  @click="selectUserFilter(user)"
+                >
+                  <span>{{ user.email }}</span>
+                  <span class="ml-2 text-xs text-gray-400">#{{ user.id }}</span>
+                </button>
+              </div>
+            </div>
+
             <!-- API Key Filter -->
             <div class="min-w-[180px]">
               <label class="input-label">{{ t('usage.apiKeyFilter') }}</label>
@@ -507,7 +547,8 @@
 import { ref, computed, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
-import { usageAPI, keysAPI } from '@/api'
+import { useAuthStore } from '@/stores/auth'
+import { usageAPI, keysAPI, adminAPI } from '@/api'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import TablePageLayout from '@/components/layout/TablePageLayout.vue'
 import DataTable from '@/components/common/DataTable.vue'
@@ -516,8 +557,9 @@ import EmptyState from '@/components/common/EmptyState.vue'
 import Select from '@/components/common/Select.vue'
 import DateRangePicker from '@/components/common/DateRangePicker.vue'
 import Icon from '@/components/icons/Icon.vue'
-import type { UsageLog, ApiKey, UsageQueryParams, UsageStatsResponse } from '@/types'
+import type { UsageLog, UsageQueryParams, UsageStatsResponse } from '@/types'
 import type { Column } from '@/components/common/types'
+import type { SimpleUser } from '@/api/admin/usage'
 import { formatDateTime, formatReasoningEffort } from '@/utils/format'
 import { getPersistedPageSize } from '@/composables/usePersistedPageSize'
 import { formatCacheTokens, formatMultiplier } from '@/utils/formatters'
@@ -528,6 +570,7 @@ import { getBillingModeLabel, getBillingModeBadgeClass } from '@/utils/billingMo
 
 const { t } = useI18n()
 const appStore = useAppStore()
+const authStore = useAuthStore()
 
 let abortController: AbortController | null = null
 
@@ -559,10 +602,19 @@ const columns = computed<Column[]>(() => [
   { key: 'user_agent', label: t('usage.userAgent'), sortable: false }
 ])
 
+type UsageApiKeyOption = {
+  id: number
+  name: string
+}
+
 const usageLogs = ref<UsageLog[]>([])
-const apiKeys = ref<ApiKey[]>([])
+const apiKeys = ref<UsageApiKeyOption[]>([])
 const loading = ref(false)
 const exporting = ref(false)
+const userKeyword = ref('')
+const userResults = ref<SimpleUser[]>([])
+const showUserDropdown = ref(false)
+let userSearchTimeout: ReturnType<typeof setTimeout> | null = null
 
 const apiKeyOptions = computed(() => {
   return [
@@ -683,6 +735,49 @@ const buildUsageQueryParams = (page: number, pageSize: number): UsageTableQueryP
   sort_order: sortState.sort_order
 })
 
+const debounceUserSearch = () => {
+  if (userSearchTimeout) clearTimeout(userSearchTimeout)
+  userSearchTimeout = setTimeout(async () => {
+    const keyword = userKeyword.value.trim()
+    if (!keyword) {
+      userResults.value = []
+      return
+    }
+
+    try {
+      userResults.value = await adminAPI.usage.searchUsers(keyword)
+    } catch {
+      userResults.value = []
+    }
+  }, 300)
+}
+
+const hideUserDropdownDelayed = () => {
+  setTimeout(() => {
+    showUserDropdown.value = false
+  }, 150)
+}
+
+const selectUserFilter = (user: SimpleUser) => {
+  userKeyword.value = user.email
+  userResults.value = []
+  showUserDropdown.value = false
+  filters.value.user_id = user.id
+  filters.value.api_key_id = undefined
+  loadApiKeys()
+  applyFilters()
+}
+
+const clearUserFilter = () => {
+  userKeyword.value = ''
+  userResults.value = []
+  showUserDropdown.value = false
+  filters.value.user_id = undefined
+  filters.value.api_key_id = undefined
+  loadApiKeys()
+  applyFilters()
+}
+
 const loadUsageLogs = async () => {
   if (abortController) {
     abortController.abort()
@@ -720,8 +815,20 @@ const loadUsageLogs = async () => {
 
 const loadApiKeys = async () => {
   try {
+    if (authStore.isAdmin && filters.value.user_id) {
+      const response = await adminAPI.usage.searchApiKeys(filters.value.user_id, '')
+      apiKeys.value = response.map((key) => ({
+        id: key.id,
+        name: key.name
+      }))
+      return
+    }
+
     const response = await keysAPI.list(1, 100)
-    apiKeys.value = response.items
+    apiKeys.value = response.items.map((key) => ({
+      id: key.id,
+      name: key.name
+    }))
   } catch (error) {
     console.error('Failed to load API keys:', error)
   }
@@ -733,7 +840,8 @@ const loadUsageStats = async () => {
     const stats = await usageAPI.getStatsByDateRange(
       filters.value.start_date || startDate.value,
       filters.value.end_date || endDate.value,
-      apiKeyId
+      apiKeyId,
+      authStore.isAdmin ? filters.value.user_id : undefined
     )
     usageStats.value = stats
   } catch (error) {
@@ -750,9 +858,13 @@ const applyFilters = () => {
 const resetFilters = () => {
   filters.value = {
     api_key_id: undefined,
+    user_id: undefined,
     start_date: undefined,
     end_date: undefined
   }
+  userKeyword.value = ''
+  userResults.value = []
+  showUserDropdown.value = false
   // Reset date range to default (last 7 days)
   const now = new Date()
   const weekAgo = new Date(now)
@@ -762,6 +874,7 @@ const resetFilters = () => {
   filters.value.start_date = startDate.value
   filters.value.end_date = endDate.value
   pagination.page = 1
+  loadApiKeys()
   loadUsageLogs()
   loadUsageStats()
 }
