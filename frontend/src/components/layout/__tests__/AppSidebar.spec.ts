@@ -30,3 +30,12 @@ describe('AppSidebar header styles', () => {
     expect(sidebarBrandBlockMatch?.[0]).not.toContain('overflow: hidden;')
   })
 })
+
+describe('AppSidebar admin sections', () => {
+  it('places leaderboard under the public area section instead of my account', () => {
+    expect(componentSource).toContain("{{ t('nav.publicArea') }}")
+    expect(componentSource).toContain("const isPublicNavItem = (item: NavItem) => item.path === '/leaderboard'")
+    expect(componentSource).toContain('const publicNavItems = computed((): NavItem[] => adminSelfNavItems.value.filter(isPublicNavItem))')
+    expect(componentSource).toContain('const personalNavItems = computed((): NavItem[] => adminSelfNavItems.value.filter(item => !isPublicNavItem(item)))')
+  })
+})

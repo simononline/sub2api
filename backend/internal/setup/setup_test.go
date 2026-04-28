@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestDecideAdminBootstrap(t *testing.T) {
@@ -86,4 +87,27 @@ func TestWriteConfigFileKeepsDefaultUserConcurrency(t *testing.T) {
 	if !strings.Contains(string(data), "user_concurrency: 5") {
 		t.Fatalf("config missing default user concurrency, got:\n%s", string(data))
 	}
+}
+
+func TestDatabaseMigrationTimeout(t *testing.T) {
+	t.Run("default timeout", func(t *testing.T) {
+		t.Setenv("DATABASE_MIGRATION_TIMEOUT_SECONDS", "")
+		if got := databaseMigrationTimeout(); got != defaultDatabaseMigrationTimeout {
+			t.Fatalf("databaseMigrationTimeout()=%v, want %v", got, defaultDatabaseMigrationTimeout)
+		}
+	})
+
+	t.Run("custom timeout", func(t *testing.T) {
+		t.Setenv("DATABASE_MIGRATION_TIMEOUT_SECONDS", "600")
+		if got := databaseMigrationTimeout(); got != 600*time.Second {
+			t.Fatalf("databaseMigrationTimeout()=%v, want %v", got, 600*time.Second)
+		}
+	})
+
+	t.Run("non-positive timeout falls back", func(t *testing.T) {
+		t.Setenv("DATABASE_MIGRATION_TIMEOUT_SECONDS", "0")
+		if got := databaseMigrationTimeout(); got != defaultDatabaseMigrationTimeout {
+			t.Fatalf("databaseMigrationTimeout()=%v, want %v", got, defaultDatabaseMigrationTimeout)
+		}
+	})
 }

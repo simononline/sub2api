@@ -442,6 +442,7 @@ export default {
     promoCodes: 'Promo Codes',
     settings: 'Settings',
     myAccount: 'My Account',
+    publicArea: 'Public Area',
     lightMode: 'Light Mode',
     darkMode: 'Dark Mode',
     collapse: 'Collapse',

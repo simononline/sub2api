@@ -24,10 +24,11 @@ import (
 
 // Config paths
 const (
-	ConfigFileName             = "config.yaml"
-	InstallLockFile            = ".installed"
-	defaultUserConcurrency     = 5
-	simpleModeAdminConcurrency = 30
+	ConfigFileName                  = "config.yaml"
+	InstallLockFile                 = ".installed"
+	defaultUserConcurrency          = 5
+	simpleModeAdminConcurrency      = 30
+	defaultDatabaseMigrationTimeout = 60 * time.Second
 )
 
 func setupDefaultAdminConcurrency() int {
@@ -345,7 +346,7 @@ func initializeDatabase(cfg *SetupConfig) error {
 		}
 	}()
 
-	migrationCtx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	migrationCtx, cancel := context.WithTimeout(context.Background(), databaseMigrationTimeout())
 	defer cancel()
 	return repository.ApplyMigrations(migrationCtx, db)
 }
@@ -529,6 +530,14 @@ func getEnvIntOrDefault(key string, defaultValue int) int {
 		}
 	}
 	return defaultValue
+}
+
+func databaseMigrationTimeout() time.Duration {
+	seconds := getEnvIntOrDefault("DATABASE_MIGRATION_TIMEOUT_SECONDS", int(defaultDatabaseMigrationTimeout/time.Second))
+	if seconds <= 0 {
+		return defaultDatabaseMigrationTimeout
+	}
+	return time.Duration(seconds) * time.Second
 }
 
 // AutoSetupFromEnv performs automatic setup using environment variables
