@@ -35,7 +35,20 @@ describe('AppSidebar admin sections', () => {
   it('places leaderboard under the public area section instead of my account', () => {
     expect(componentSource).toContain("{{ t('nav.publicArea') }}")
     expect(componentSource).toContain("const isPublicNavItem = (item: NavItem) => item.path === '/leaderboard'")
-    expect(componentSource).toContain('const publicNavItems = computed((): NavItem[] => adminSelfNavItems.value.filter(isPublicNavItem))')
-    expect(componentSource).toContain('const personalNavItems = computed((): NavItem[] => adminSelfNavItems.value.filter(item => !isPublicNavItem(item)))')
+    expect(componentSource).toContain('const adminSelfNavSections = computed(() => splitSelfNavItems(finalizeNav(buildSelfNavItems(false))))')
+    expect(componentSource).toContain('const publicNavItems = computed((): NavItem[] => adminSelfNavSections.value.publicItems)')
+    expect(componentSource).toContain('const personalNavItems = computed((): NavItem[] => adminSelfNavSections.value.personalItems)')
+  })
+})
+
+describe('AppSidebar regular user sections', () => {
+  it('places leaderboard under the public area section and the remaining items under my account', () => {
+    expect(componentSource).toContain('v-if="userPublicNavItems.length" class="sidebar-section"')
+    expect(componentSource).toContain('v-for="item in userPublicNavItems"')
+    expect(componentSource).toContain("{{ t('nav.myAccount') }}")
+    expect(componentSource).toContain('v-if="userNavItems.length" class="sidebar-section"')
+    expect(componentSource).toContain('const userSelfNavSections = computed(() => splitSelfNavItems(finalizeNav(buildSelfNavItems(true))))')
+    expect(componentSource).toContain('const userPublicNavItems = computed((): NavItem[] => userSelfNavSections.value.publicItems)')
+    expect(componentSource).toContain('const userNavItems = computed((): NavItem[] => userSelfNavSections.value.personalItems)')
   })
 })

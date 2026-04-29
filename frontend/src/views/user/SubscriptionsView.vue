@@ -40,14 +40,14 @@
               <div>
                 <div class="flex items-center gap-2">
                   <h3 class="font-semibold text-gray-900 dark:text-white">
-                    {{ subscription.group?.name || `Group #${subscription.group_id}` }}
+                    {{ displaySubscriptionGroupName(subscription.group?.name, subscription.group_id) }}
                   </h3>
                   <span :class="['rounded-md border px-2 py-0.5 text-[11px] font-medium', platformBadgeClass(subscription.group?.platform || '')]">
                     {{ platformLabel(subscription.group?.platform || '') }}
                   </span>
                 </div>
                 <p v-if="subscription.group?.description" class="mt-0.5 text-xs text-gray-500 dark:text-dark-400">
-                  {{ subscription.group.description }}
+                  {{ sanitizeComplianceText(subscription.group.description) }}
                 </p>
               </div>
             </div>
@@ -254,6 +254,7 @@ import subscriptionsAPI from '@/api/subscriptions'
 import type { UserSubscription } from '@/types'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Icon from '@/components/icons/Icon.vue'
+import { sanitizeComplianceText } from '@/utils/complianceText'
 import { formatDateOnly } from '@/utils/format'
 import { platformBorderClass, platformBadgeClass, platformButtonClass, platformLabel } from '@/utils/platformColors'
 
@@ -265,6 +266,11 @@ function platformAccentDotClass(p: string): string {
     case 'gemini': return 'bg-blue-500'
     default: return 'bg-gray-400'
   }
+}
+
+function displaySubscriptionGroupName(name: string | null | undefined, groupId: number): string {
+  const sanitized = sanitizeComplianceText(name || '')
+  return sanitized || `Group #${groupId}`
 }
 
 const { t } = useI18n()

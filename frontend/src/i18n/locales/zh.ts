@@ -2,24 +2,26 @@ export default {
   // Home Page
   home: {
     viewOnGithub: '在 GitHub 上查看',
-    viewDocs: '查看文档',
+    viewDocs: 'API 接入文档',
+    viewPlans: '查看套餐',
     docs: '文档',
     switchToLight: '切换到浅色模式',
     switchToDark: '切换到深色模式',
     dashboard: '控制台',
     login: '登录',
     backToHome: '返回首页',
-    getStarted: '立即开始',
+    getStarted: '立即开通',
     goToDashboard: '进入控制台',
-    poolNotice: '我们使用配置大量 PRO 账号构成的号池，保障平台稳定调用和数据承载。',
-    heroBadge: 'GPT 专用 API 服务',
-    heroSubtitle: '一个密钥，稳定接入 GPT',
-    heroDescription: '聚焦 GPT 相关服务，提供 OpenAI 兼容接口、资源池调度、按量计费和工程师支持，适合个人开发、团队工具和自动化工作流。',
+    poolNotice: '提供统一 API、统一鉴权、统一计费、统一日志、模型路由与失败重试能力，帮助开发者屏蔽上游复杂度并稳定接入服务。',
+    heroBadge: 'AI 编程辅助服务',
+    heroTitle: '面向开发者的 AI 编程与文本生成服务',
+    heroSubtitle: '提供稳定的模型调用能力，支持代码生成、文本生成、内容改写、程序解释、接口集成等场景，适用于个人开发者、团队与企业应用。',
+    heroDescription: '用户购买的是本平台提供的统一接口、统一鉴权、统一计费、统一日志与编程场景优化服务，而不是任何第三方账户权益或第三方原生计费资源。',
     tags: {
-      subscriptionToApi: 'GPT 订阅转 API',
-      stickySession: 'GPT 会话保持',
-      realtimeBilling: '实时用量计费',
-      engineerSupport: '工程师支持'
+      subscriptionToApi: '统一 API 接入',
+      stickySession: '统一鉴权与日志',
+      realtimeBilling: '统一计费与配额',
+      engineerSupport: '模型路由与容灾'
     },
     // 用户痛点区块
     painPoints: {
@@ -49,142 +51,168 @@ export default {
       subtitle: '简单三步，开始省心使用 AI'
     },
     features: {
-      unifiedGateway: 'OpenAI 兼容网关',
-      unifiedGatewayDesc: '保持熟悉的 OpenAI API 调用方式，只需替换 Base URL 和 API Key 即可接入 GPT 服务。',
-      multiAccount: 'GPT 资源池调度',
-      multiAccountDesc: '通过资源池、负载均衡和失败重试降低单账号限流影响，让请求更稳定地完成。',
-      balanceQuota: '按量计费与配额',
-      balanceQuotaDesc: '按实际调用量统计消费，支持余额、额度和用量明细，团队成员成本更容易控制。'
+      unifiedGateway: '统一接口服务',
+      unifiedGatewayDesc: '通过统一 API 和统一鉴权方式接入代码生成与文本处理能力，减少多模型格式差异带来的集成成本。',
+      multiAccount: '模型路由与容灾',
+      multiAccountDesc: '支持请求路由、失败重试与故障切换，帮助开发者屏蔽上游复杂度并提升调用稳定性。',
+      balanceQuota: '统一日志与计费',
+      balanceQuotaDesc: '提供调用日志、配额管理、用量统计与统一计费能力，方便团队控制成本和权限。'
     },
     // 优势对比
     comparison: {
       title: '为什么选择我们？',
       headers: {
         feature: '对比项',
-        official: '官方订阅',
+        official: '自行对接',
         us: '本平台'
       },
       items: {
         pricing: {
           feature: '付费方式',
-          official: '固定订阅或独立账单',
-          us: '按量计费，可按需补充额度'
+          official: '多个服务分别开通、分别结算',
+          us: '统一计费，可按套餐或配额开通'
         },
         models: {
-          feature: '服务范围',
-          official: '自行对接 GPT 官方服务',
-          us: '聚焦 GPT，统一封装接入与调度'
+          feature: '接口与鉴权',
+          official: '不同上游接口格式和密钥分别维护',
+          us: '统一 API、统一鉴权、统一接入方式'
         },
         management: {
-          feature: '账号管理',
-          official: '账号、订阅、Key 分开维护',
-          us: '统一密钥，一站管理调用与额度'
+          feature: '日志与管理',
+          official: '日志、统计、额度需要自行建设',
+          us: '统一日志、调用统计与配额管理'
         },
         stability: {
-          feature: '服务稳定性',
-          official: '单账号限额需要自行处理',
-          us: '资源池调度、重试和故障切换'
+          feature: '稳定性',
+          official: '上游波动时需自行切换和重试',
+          us: '模型路由、失败重试与基础容灾'
         },
         control: {
-          feature: '用量控制',
-          official: '需要自行开发统计和限制',
-          us: '可设配额、查明细、看趋势'
+          feature: '编程场景支持',
+          official: '需要自行适配代码生成与解释任务',
+          us: '支持代码生成、解释、重构与文本处理'
         }
       }
     },
     providers: {
-      title: 'GPT 服务范围',
-      description: '当前主页仅展示 GPT 相关能力，避免让用户误以为同时提供 Claude、Gemini 等服务。',
-      supported: '已支持',
+      title: '核心服务能力',
+      description: '围绕开发者接入与业务集成设计，适合代码生成、解释、重构和技术内容处理等高频任务。',
+      supported: '核心能力',
       soon: '即将推出',
-      gptCore: 'GPT 系列模型接入',
-      gptCoreDesc: '面向 GPT 对话、代码、总结、工具调用等常见场景，统一走稳定 API 入口。',
-      openaiCompatible: 'OpenAI API 兼容',
-      openaiCompatibleDesc: '兼容主流 SDK、低代码工具和自建系统，迁移成本低，调用链路清晰。',
-      usageControl: '额度与用量管理',
-      usageControlDesc: '实时记录请求、Token 与消费明细，可用于个人预算和团队成本分摊。',
+      gptCore: '代码生成与补全',
+      gptCoreDesc: '根据自然语言描述生成代码片段，支持常见编程任务、函数编写、脚本生成与结构化输出。',
+      openaiCompatible: '代码解释与重构',
+      openaiCompatibleDesc: '帮助开发者理解现有代码逻辑，进行注释生成、代码优化、结构调整与可读性提升。',
+      usageControl: '文本生成与内容处理',
+      usageControlDesc: '支持技术文档撰写、摘要提取、格式改写、问答生成、提示词处理等文本任务。',
+      apiAccess: 'API 接入能力',
+      apiAccessDesc: '提供统一接口调用方式、鉴权机制、配额管理与调用统计，便于快速集成到网站、应用和内部系统。',
       claude: 'Claude',
       gemini: 'Gemini',
       antigravity: 'Antigravity',
       more: '更多'
     },
     supportedModels: {
-      title: '当前支持的 GPT 模型',
-      description: '模型列表优先从公开接口实时读取，展示当前启用渠道里可承载的 OpenAI / GPT 模型。',
+      title: '当前可调用模型',
+      description: '模型列表优先从公开接口实时读取，展示当前启用通道中可供开发者调用的 OpenAI 兼容模型能力。',
       loading: '正在查询模型列表...',
       count: '共 {count} 个模型',
       live: '来自实时接口',
-      fallback: '接口不可用时展示默认 GPT 白名单',
+      fallback: '接口不可用时展示默认模型白名单',
       empty: '暂未查询到可展示模型',
       channelCount: '{count} 条线路'
     },
     serviceHighlights: {
-      title: '核心服务保障',
-      description: '参考官方镜像和 API 中转服务的核心诉求，页面突出稳定、速度、安全和支持能力。',
+      title: '适用场景',
+      description: '适用于网站、应用、内部系统与团队工作流中的开发和内容处理任务。',
       items: {
-        pool: {
-          title: '资源池承载',
-          desc: '多上游资源统一调度，减少单点限流、单账号异常对业务请求的影响。'
+        tooling: {
+          title: '开发者工具接入',
+          desc: '将统一接口嵌入编辑器插件、脚本平台和内部开发工具。'
         },
-        speed: {
-          title: '稳定高速',
-          desc: '面向 API 场景优化请求链路，适合高频对话、插件调用和自动化任务。'
+        assistant: {
+          title: 'AI 编程助手',
+          desc: '用于代码补全、解释、重构和调试辅助等日常开发任务。'
         },
-        security: {
-          title: '密钥隔离',
-          desc: '用户只使用平台 Key 调用服务，便于权限收口、额度隔离和风险控制。'
+        supportDesk: {
+          title: '自动化工单与客服回复',
+          desc: '处理标准化问答、工单分类和回复草稿生成。'
         },
-        support: {
-          title: '工程师支持',
-          desc: '提供接入排查、SDK 配置、调用报错定位等技术支持，减少上线阻力。'
+        docs: {
+          title: '技术文档生成',
+          desc: '生成接口说明、变更记录、测试说明和交付文档。'
+        },
+        rewrite: {
+          title: '内容生产与改写',
+          desc: '对技术文章、模板文本和知识库内容进行整理、改写与扩写。'
+        },
+        systems: {
+          title: '内部系统智能化升级',
+          desc: '在后台管理、业务系统和自动化流程中接入文本与代码能力。'
+        },
+        knowledge: {
+          title: '企业知识问答',
+          desc: '为团队知识库、流程库和常见问题提供问答支持。'
+        },
+        education: {
+          title: '教育与训练类辅助应用',
+          desc: '适用于编程训练、作业讲解、练习反馈和示例生成。'
         }
       }
     },
     workflow: {
-      title: '三步接入 GPT',
+      title: '三步接入服务',
       description: '从注册到调用保持轻量，适合快速接入现有项目。',
       steps: {
         createKey: {
-          title: '创建 API Key',
-          desc: '注册登录后在控制台创建密钥，并按业务场景设置可用额度。'
+          title: '创建平台 API Key',
+          desc: '开通服务后在控制台生成平台密钥，并按项目或团队设置配额与权限。'
         },
         callApi: {
-          title: '替换接入地址',
-          desc: '在 OpenAI SDK 或兼容工具中替换 Base URL，继续使用熟悉的请求格式。'
+          title: '接入统一接口',
+          desc: '在 SDK、网站、应用或内部系统中使用统一地址与鉴权方式发起调用。'
         },
         monitor: {
-          title: '查看用量与成本',
-          desc: '通过控制台追踪请求量、Token、余额和消费趋势，及时调整配额。'
+          title: '查看日志与配额',
+          desc: '通过控制台查看调用日志、配额消耗、计费记录与基础统计，持续优化成本。'
         }
       }
     },
     faq: {
       title: '常见问题',
-      description: '围绕 GPT API 接入、兼容性、安全和支持的高频问题。',
+      description: '围绕开发者接入、接口兼容、成本控制与平台服务边界的高频问题。',
       items: {
-        difference: {
-          question: '和直接使用官方 GPT 有什么区别？',
-          answer: '底层仍面向 GPT 能力，平台侧提供统一密钥、资源池调度、用量统计和额度管理，减少自行维护账号与接入链路的成本。'
+        service: {
+          question: '你们出售的是什么？',
+          answer: '我们提供的是 AI 文本生成与编程辅助服务，用户购买后获得相应的模型调用服务配额，可用于接口调用、文本处理、代码生成、代码解释等场景。'
         },
-        compatibility: {
-          question: '现有 OpenAI SDK 能直接用吗？',
-          answer: '页面定位为 OpenAI 兼容网关，通常只需要替换 Base URL 和 API Key；具体参数以你的服务配置和文档为准。'
+        virtualAssets: {
+          question: '是否出售虚拟货币、数字代币或投资类产品？',
+          answer: '不是。\n本平台提供的是面向开发者和企业用户的技术服务与模型调用能力，不涉及虚拟货币、数字代币发行、投资、理财或二级交易服务。'
         },
-        security: {
-          question: '账号和密钥如何隔离？',
-          answer: '用户侧仅持有平台 API Key，可通过控制台管理额度和状态，避免把上游账号分散到多个项目里。'
+        usage: {
+          question: '购买后如何使用？',
+          answer: '购买后，用户可在平台控制台或 API 接口中使用相应的服务配额，具体调用方式、参数说明、消耗规则与接口示例以平台文档为准。'
         },
-        support: {
-          question: '接入报错时如何处理？',
-          answer: '可结合请求日志、额度记录和技术支持定位问题，包括模型参数、网络链路、密钥权限和上游响应。'
+        scenarios: {
+          question: '这些服务适用于哪些场景？',
+          answer: '适用于：\n代码生成、代码解释、代码重构、注释生成、文本生成、内容改写、技术文档撰写、自动化工作流接入、企业内部系统智能化处理'
+        },
+        refund: {
+          question: '能否退款？',
+          answer: '未使用或符合平台退款规则的订单，可在规则范围内申请处理。\n\n已产生明显调用消耗、存在异常使用、违规使用或超出退款条件的，平台有权按照服务规则进行处理。\n\n具体以退款政策页面为准。'
+        },
+        official: {
+          question: '你们是否是某单一模型厂商的官方渠道？',
+          answer: '本平台提供的是自有技术服务与接口能力。\n\n页面中如涉及特定模型名称，仅用于描述模型兼容能力、适用场景或底层技术方案，不代表本平台提供该第三方主体的原生账户权益、原生计费补充服务、虚拟货币或可转让数字资产。'
         }
       }
     },
     // CTA 区块
     cta: {
-      title: '准备接入 GPT API？',
-      description: '保留现有网关、计费和用量能力，同时把首页信息聚焦到 GPT 服务，让用户一眼知道当前可用范围。',
-      button: '开始使用'
+      title: '准备接入 AI 编程与文本生成服务？',
+      description: '从统一接口开始接入代码生成、文本处理与开发者场景能力，快速完成你的业务集成。',
+      button: '立即开通'
     },
     footer: {
       allRightsReserved: '保留所有权利。'
@@ -5349,7 +5377,7 @@ export default {
         siteNamePlaceholder: 'WeShare',
         siteSubtitle: '站点副标题',
         siteSubtitleHint: '显示在登录和注册页面',
-        siteSubtitlePlaceholder: '订阅转 API 转换平台',
+        siteSubtitlePlaceholder: '立志成为天才程序员的坚实后盾',
         apiBaseUrl: 'API 端点地址',
         apiBaseUrlHint: '用于"使用密钥"和"导入到 CC Switch"功能，留空则使用当前站点地址',
         apiBaseUrlPlaceholder: 'https://api.example.com',
@@ -6495,6 +6523,16 @@ export default {
     subscribeNow: '立即开通',
     renewNow: '续费',
     selectPlan: '选择套餐',
+    rechargeHeadline: '充值流程更清晰',
+    rechargeHint: '选择金额与支付方式，确认后即可创建订单。',
+    subscriptionHeadline: '按套餐分类挑选订阅套餐',
+    subscriptionHint: '按套餐名称自动归类，忽略大小写。OpenAI 对应 Codex，Claude 对应 Claude。',
+    availablePlans: '可选套餐',
+    planCategories: '套餐分类',
+    planFiltersTitle: '按套餐名称筛选',
+    planFiltersHint: '根据套餐名称自动归类，不区分大小写。OpenAI 对应 Codex，Claude 对应 Claude。',
+    planFiltersAll: '全部',
+    noPlansForFilter: '当前筛选下暂无可用套餐',
     planFeatures: '功能特性',
     planCard: {
       rate: '倍率',

@@ -28,72 +28,214 @@
     </div>
 
     <!-- Header -->
-    <header class="relative z-20 px-6 py-4">
-      <nav class="mx-auto flex max-w-6xl items-center justify-between">
-        <!-- Logo -->
-        <div class="flex items-center">
-          <div class="h-10 w-10 overflow-hidden rounded-lg border border-primary-400/30 bg-dark-950/5 dark:bg-dark-950">
+    <header class="glass sticky top-0 z-30 border-b border-gray-200/50 dark:border-dark-700/50">
+      <nav class="flex h-16 items-center justify-between px-4 md:px-6">
+        <router-link to="/home" class="flex min-w-0 items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg border border-primary-400/30 bg-dark-950/5 dark:bg-dark-950">
             <img :src="siteLogo || '/logo.png'" alt="Logo" class="h-full w-full object-contain" />
           </div>
-        </div>
+          <div class="hidden min-w-0 sm:block">
+            <div class="truncate text-sm font-medium text-gray-900 dark:text-white">
+              {{ siteName }}
+            </div>
+            <div class="max-w-[18rem] truncate text-xs text-gray-500 dark:text-dark-400">
+              {{ siteSubtitle }}
+            </div>
+          </div>
+        </router-link>
 
-        <!-- Nav Actions -->
-        <div class="flex items-center gap-3">
-          <!-- Language Switcher -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <router-link
+            :to="consoleEntryPath"
+            class="home-header-link home-header-console-link"
+          >
+            {{ t('home.goToDashboard') }}
+          </router-link>
+
+          <AnnouncementBell v-if="isAuthenticated" />
+          <button
+            v-else
+            type="button"
+            class="home-header-icon-button"
+            :title="t('announcements.title')"
+            :aria-label="t('announcements.title')"
+            @click="handleGuestLogin"
+          >
+            <Icon name="bell" size="md" />
+          </button>
+
           <LocaleSwitcher />
 
-          <!-- Doc Link -->
-          <a
-            v-if="docUrl"
-            :href="docUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="rounded-md border border-transparent p-2 text-gray-500 transition-colors hover:border-gray-200 hover:bg-gray-100 hover:text-gray-900 dark:text-dark-400 dark:hover:border-dark-800 dark:hover:bg-dark-800 dark:hover:text-dark-50"
-            :title="t('home.viewDocs')"
-          >
-            <Icon name="book" size="md" />
-          </a>
-
-          <!-- Theme Toggle -->
           <button
+            type="button"
             @click="toggleTheme"
-            class="rounded-md border border-transparent p-2 text-gray-500 transition-colors hover:border-gray-200 hover:bg-gray-100 hover:text-gray-900 dark:text-dark-400 dark:hover:border-dark-800 dark:hover:bg-dark-800 dark:hover:text-dark-50"
-            :title="isDark ? t('home.switchToLight') : t('home.switchToDark')"
+            class="home-header-action"
+            :title="themeToggleLabel"
+            :aria-label="themeToggleLabel"
           >
             <Icon v-if="isDark" name="sun" size="md" />
             <Icon v-else name="moon" size="md" />
+            <span class="hidden sm:inline">{{ themeToggleLabel }}</span>
           </button>
 
-          <!-- Login / Dashboard Button -->
-          <router-link
-            v-if="isAuthenticated"
-            :to="dashboardPath"
-            class="inline-flex items-center gap-1.5 rounded-full border border-gray-950 bg-gray-950 py-1 pl-1 pr-2.5 transition-colors hover:border-primary-400 dark:border-dark-50 dark:bg-dark-950 dark:hover:border-primary-400"
-          >
-            <span
-              class="flex h-5 w-5 items-center justify-center rounded-full bg-primary-500 text-[10px] font-medium text-dark-950"
+          <template v-if="user">
+            <div
+              class="hidden items-center gap-2 rounded-full border border-primary-500/30 bg-primary-500/10 px-3 py-1.5 sm:flex"
             >
-              {{ userInitial }}
-            </span>
-            <span class="text-xs font-medium text-white">{{ t('home.dashboard') }}</span>
-            <svg
-              class="h-3 w-3 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
-              />
-            </svg>
-          </router-link>
+              <svg
+                class="h-4 w-4 text-primary-600 dark:text-primary-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"
+                />
+              </svg>
+              <span class="text-sm font-semibold text-primary-700 dark:text-primary-300">
+                ${{ user.balance?.toFixed(2) || '0.00' }}
+              </span>
+            </div>
+
+            <div class="relative" ref="dropdownRef">
+              <button
+                type="button"
+                @click="toggleDropdown"
+                class="flex items-center gap-2 rounded-md p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-dark-800"
+                aria-label="User Menu"
+              >
+                <div class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-md border border-primary-500/30 bg-primary-500/10 text-sm font-medium text-primary-600 dark:text-primary-300">
+                  <img
+                    v-if="avatarUrl"
+                    :src="avatarUrl"
+                    :alt="displayName"
+                    class="h-full w-full object-cover"
+                  >
+                  <span v-else>{{ userInitials }}</span>
+                </div>
+                <div class="hidden text-left md:block">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ displayName }}
+                  </div>
+                  <div class="text-xs capitalize text-gray-500 dark:text-dark-400">
+                    {{ user.role }}
+                  </div>
+                </div>
+                <Icon name="chevronDown" size="sm" class="hidden text-gray-400 md:block" />
+              </button>
+
+              <transition name="dropdown">
+                <div v-if="dropdownOpen" class="dropdown right-0 mt-2 w-56">
+                  <div class="border-b border-gray-100 px-4 py-3 dark:border-dark-700">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                      {{ displayName }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-dark-400">{{ user.email }}</div>
+                  </div>
+
+                  <div class="border-b border-gray-100 px-4 py-2 dark:border-dark-700 sm:hidden">
+                    <div class="text-xs text-gray-500 dark:text-dark-400">
+                      {{ t('common.balance') }}
+                    </div>
+                    <div class="text-sm font-semibold text-primary-600 dark:text-primary-400">
+                      ${{ user.balance?.toFixed(2) || '0.00' }}
+                    </div>
+                  </div>
+
+                  <div class="py-1">
+                    <router-link :to="dashboardPath" @click="closeDropdown" class="dropdown-item">
+                      <Icon name="chart" size="sm" />
+                      {{ t('home.dashboard') }}
+                    </router-link>
+
+                    <router-link to="/profile" @click="closeDropdown" class="dropdown-item">
+                      <Icon name="user" size="sm" />
+                      {{ t('nav.profile') }}
+                    </router-link>
+
+                    <router-link to="/keys" @click="closeDropdown" class="dropdown-item">
+                      <Icon name="key" size="sm" />
+                      {{ t('nav.apiKeys') }}
+                    </router-link>
+
+                    <a
+                      v-if="authStore.isAdmin"
+                      href="https://github.com/Wei-Shaw/sub2api"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      @click="closeDropdown"
+                      class="dropdown-item"
+                    >
+                      <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"
+                        />
+                      </svg>
+                      {{ t('nav.github') }}
+                    </a>
+                  </div>
+
+                  <div
+                    v-if="contactInfo"
+                    class="border-t border-gray-100 px-4 py-2.5 dark:border-dark-700"
+                  >
+                    <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                      <svg
+                        class="h-3.5 w-3.5 flex-shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"
+                        />
+                      </svg>
+                      <span>{{ t('common.contactSupport') }}:</span>
+                      <span class="font-medium text-gray-700 dark:text-gray-300">
+                        {{ contactInfo }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="border-t border-gray-100 py-1 dark:border-dark-700">
+                    <button
+                      type="button"
+                      @click="handleLogout"
+                      class="dropdown-item w-full text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                    >
+                      <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                        />
+                      </svg>
+                      {{ t('nav.logout') }}
+                    </button>
+                  </div>
+                </div>
+              </transition>
+            </div>
+          </template>
+
           <router-link
             v-else
             to="/login"
-            class="inline-flex items-center rounded-full border border-gray-950 bg-gray-950 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:border-primary-400 dark:border-dark-50 dark:bg-dark-950"
+            class="home-header-link home-header-link-primary"
           >
             {{ t('home.login') }}
           </router-link>
@@ -103,7 +245,7 @@
 
     <!-- Main Content -->
     <main class="relative z-10 flex-1 px-6 py-14 md:py-20">
-      <div class="mx-auto max-w-6xl">
+      <div class="mx-auto w-full max-w-[1440px]">
         <!-- Pool Notice -->
         <div
           class="mb-8 flex flex-col gap-3 rounded-lg border border-primary-400/30 bg-primary-500/10 p-4 text-sm text-primary-800 backdrop-blur-sm dark:text-primary-200 sm:flex-row sm:items-center"
@@ -131,7 +273,7 @@
             <h1
               class="mb-5 text-5xl font-normal leading-none text-gray-950 dark:text-dark-50 md:text-6xl lg:text-hero"
             >
-              {{ siteName }}
+              {{ t('home.heroTitle') }}
             </h1>
             <p class="mb-8 max-w-xl text-base leading-7 text-gray-600 dark:text-dark-300 md:text-lg">
               {{ siteSubtitle }}
@@ -148,6 +290,12 @@
               >
                 {{ isAuthenticated ? t('home.goToDashboard') : t('home.getStarted') }}
                 <Icon name="arrowRight" size="md" class="ml-2" :stroke-width="2" />
+              </router-link>
+              <router-link
+                :to="plansEntryPath"
+                class="btn btn-secondary px-6 py-3 text-base"
+              >
+                {{ t('home.viewPlans') }}
               </router-link>
               <a
                 v-if="docUrl"
@@ -183,11 +331,11 @@
                     <span class="code-url">/v1/chat/completions</span>
                   </div>
                   <div class="code-line line-2">
-                    <span class="code-comment"># GPT pool routing...</span>
+                    <span class="code-comment"># unified coding API</span>
                   </div>
                   <div class="code-line line-3">
                     <span class="code-success">200 OK</span>
-                    <span class="code-response">{ "model": "gpt-*" }</span>
+                    <span class="code-response">{ "scene": "code_generation", "status": "ok" }</span>
                   </div>
                   <div class="code-line line-4">
                     <span class="code-prompt">$</span>
@@ -356,7 +504,7 @@
         </section>
 
         <!-- Supported Models -->
-        <section class="mb-16">
+        <!-- <section class="mb-16">
           <div class="mb-8 text-center">
             <h2 class="mb-3 text-2xl font-normal text-gray-950 dark:text-dark-50">
               {{ t('home.supportedModels.title') }}
@@ -409,7 +557,7 @@
               {{ t('home.supportedModels.empty') }}
             </div>
           </div>
-        </section>
+        </section> -->
 
         <!-- Service Highlights -->
         <section class="mb-16">
@@ -531,7 +679,7 @@
               <h3 class="mb-2 text-base font-normal text-gray-950 dark:text-dark-50">
                 {{ item.question }}
               </h3>
-              <p class="text-sm leading-6 text-gray-600 dark:text-dark-400">
+              <p class="whitespace-pre-line text-sm leading-6 text-gray-600 dark:text-dark-400">
                 {{ item.answer }}
               </p>
             </div>
@@ -560,7 +708,7 @@
     <!-- Footer -->
     <footer class="relative z-10 border-t border-gray-200 px-6 py-8 dark:border-dark-800">
       <div
-        class="mx-auto flex max-w-6xl flex-col items-center justify-center gap-4 text-center sm:flex-row sm:text-left"
+        class="mx-auto flex w-full max-w-[1440px] flex-col items-center justify-center gap-4 text-center sm:flex-row sm:text-left"
       >
         <p class="text-sm text-gray-500 dark:text-dark-400">
           &copy; {{ currentYear }} {{ siteName }}. {{ t('home.footer.allRightsReserved') }}
@@ -590,15 +738,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { useAuthStore, useAppStore } from '@/stores'
+import AnnouncementBell from '@/components/common/AnnouncementBell.vue'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Icon from '@/components/icons/Icon.vue'
-import userChannelsAPI, { type PublicSupportedModel } from '@/api/channels'
-import { getModelsByPlatform } from '@/composables/useModelWhitelist'
+// import  { type PublicSupportedModel } from '@/api/channels'
+// import { getModelsByPlatform } from '@/composables/useModelWhitelist'
 
 const { t } = useI18n()
+const router = useRouter()
 
 type HomeIconName =
   | 'brain'
@@ -611,21 +762,30 @@ type HomeIconName =
   | 'terminal'
   | 'creditCard'
   | 'chat'
+  | 'chatBubble'
   | 'clock'
   | 'badge'
+  | 'document'
+  | 'lightbulb'
+  | 'cog'
+  | 'database'
+  | 'beaker'
 
 const authStore = useAuthStore()
 const appStore = useAppStore()
-const supportedModels = ref<PublicSupportedModel[]>([])
-const modelsLoading = ref(false)
-const modelsFromFallback = ref(true)
+// const supportedModels = ref<PublicSupportedModel[]>([])
+// const modelsLoading = ref(false)
+// const modelsFromFallback = ref(true)
+const dropdownOpen = ref(false)
+const dropdownRef = ref<HTMLElement | null>(null)
 
 // Site settings - directly from appStore (already initialized from injected config)
 const siteName = computed(() => appStore.cachedPublicSettings?.site_name || appStore.siteName || 'WeShare')
 const siteLogo = computed(() => appStore.cachedPublicSettings?.site_logo || appStore.siteLogo || '')
-const siteSubtitle = computed(() => appStore.cachedPublicSettings?.site_subtitle || t('home.heroSubtitle'))
+const siteSubtitle = computed(() => t('admin.settings.site.siteSubtitlePlaceholder'))
 const docUrl = computed(() => appStore.cachedPublicSettings?.doc_url || appStore.docUrl || '')
 const homeContent = computed(() => appStore.cachedPublicSettings?.home_content || '')
+const contactInfo = computed(() => appStore.contactInfo)
 
 const gptServiceCards = computed<Array<{
   icon: HomeIconName
@@ -646,10 +806,16 @@ const gptServiceCards = computed<Array<{
     description: t('home.providers.openaiCompatibleDesc')
   },
   {
-    icon: 'chart',
-    iconClass: 'border-amber-500/30 bg-amber-500/10 text-amber-500',
+    icon: 'document',
+    iconClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500',
     title: t('home.providers.usageControl'),
     description: t('home.providers.usageControlDesc')
+  },
+  {
+    icon: 'server',
+    iconClass: 'border-amber-500/30 bg-amber-500/10 text-amber-500',
+    title: t('home.providers.apiAccess'),
+    description: t('home.providers.apiAccessDesc')
   }
 ])
 
@@ -659,24 +825,44 @@ const highlightCards = computed<Array<{
   description: string
 }>>(() => [
   {
-    icon: 'server',
-    title: t('home.serviceHighlights.items.pool.title'),
-    description: t('home.serviceHighlights.items.pool.desc')
+    icon: 'terminal',
+    title: t('home.serviceHighlights.items.tooling.title'),
+    description: t('home.serviceHighlights.items.tooling.desc')
   },
   {
-    icon: 'bolt',
-    title: t('home.serviceHighlights.items.speed.title'),
-    description: t('home.serviceHighlights.items.speed.desc')
+    icon: 'brain',
+    title: t('home.serviceHighlights.items.assistant.title'),
+    description: t('home.serviceHighlights.items.assistant.desc')
   },
   {
-    icon: 'shield',
-    title: t('home.serviceHighlights.items.security.title'),
-    description: t('home.serviceHighlights.items.security.desc')
+    icon: 'chatBubble',
+    title: t('home.serviceHighlights.items.supportDesk.title'),
+    description: t('home.serviceHighlights.items.supportDesk.desc')
   },
   {
-    icon: 'users',
-    title: t('home.serviceHighlights.items.support.title'),
-    description: t('home.serviceHighlights.items.support.desc')
+    icon: 'document',
+    title: t('home.serviceHighlights.items.docs.title'),
+    description: t('home.serviceHighlights.items.docs.desc')
+  },
+  {
+    icon: 'lightbulb',
+    title: t('home.serviceHighlights.items.rewrite.title'),
+    description: t('home.serviceHighlights.items.rewrite.desc')
+  },
+  {
+    icon: 'cog',
+    title: t('home.serviceHighlights.items.systems.title'),
+    description: t('home.serviceHighlights.items.systems.desc')
+  },
+  {
+    icon: 'database',
+    title: t('home.serviceHighlights.items.knowledge.title'),
+    description: t('home.serviceHighlights.items.knowledge.desc')
+  },
+  {
+    icon: 'beaker',
+    title: t('home.serviceHighlights.items.education.title'),
+    description: t('home.serviceHighlights.items.education.desc')
   }
 ])
 
@@ -728,47 +914,55 @@ const comparisonRows = computed(() => [
 
 const faqItems = computed(() => [
   {
-    question: t('home.faq.items.difference.question'),
-    answer: t('home.faq.items.difference.answer')
+    question: t('home.faq.items.service.question'),
+    answer: t('home.faq.items.service.answer')
   },
   {
-    question: t('home.faq.items.compatibility.question'),
-    answer: t('home.faq.items.compatibility.answer')
+    question: t('home.faq.items.virtualAssets.question'),
+    answer: t('home.faq.items.virtualAssets.answer')
   },
   {
-    question: t('home.faq.items.security.question'),
-    answer: t('home.faq.items.security.answer')
+    question: t('home.faq.items.usage.question'),
+    answer: t('home.faq.items.usage.answer')
   },
   {
-    question: t('home.faq.items.support.question'),
-    answer: t('home.faq.items.support.answer')
+    question: t('home.faq.items.scenarios.question'),
+    answer: t('home.faq.items.scenarios.answer')
+  },
+  {
+    question: t('home.faq.items.refund.question'),
+    answer: t('home.faq.items.refund.answer')
+  },
+  {
+    question: t('home.faq.items.official.question'),
+    answer: t('home.faq.items.official.answer')
   }
 ])
 
-const fallbackOpenAIModels = getModelsByPlatform('openai').map((name) => ({
-  name,
-  platform: 'openai',
-  channel_count: 0
-}))
+// const fallbackOpenAIModels = getModelsByPlatform('openai').map((name) => ({
+//   name,
+//   platform: 'openai',
+//   channel_count: 0
+// }))
 
-const displayedSupportedModels = computed(() => (
-  supportedModels.value.length > 0 ? supportedModels.value : fallbackOpenAIModels
-))
+// const displayedSupportedModels = computed(() => (
+//   supportedModels.value.length > 0 ? supportedModels.value : fallbackOpenAIModels
+// ))
 
-async function loadSupportedModels() {
-  modelsLoading.value = true
-  try {
-    const models = await userChannelsAPI.getPublicModels({ platform: 'openai' })
-    supportedModels.value = models
-    modelsFromFallback.value = models.length === 0
-  } catch (err) {
-    console.error('Failed to load public supported models:', err)
-    supportedModels.value = []
-    modelsFromFallback.value = true
-  } finally {
-    modelsLoading.value = false
-  }
-}
+// async function loadSupportedModels() {
+//   modelsLoading.value = true
+//   try {
+//     const models = await userChannelsAPI.getPublicModels({ platform: 'openai' })
+//     supportedModels.value = models
+//     modelsFromFallback.value = models.length === 0
+//   } catch (err) {
+//     console.error('Failed to load public supported models:', err)
+//     supportedModels.value = []
+//     modelsFromFallback.value = true
+//   } finally {
+//     modelsLoading.value = false
+//   }
+// }
 
 // Check if homeContent is a URL (for iframe display)
 const isHomeContentUrl = computed(() => {
@@ -783,23 +977,67 @@ const isDark = ref(document.documentElement.classList.contains('dark'))
 const githubUrl = 'https://github.com/Wei-Shaw/sub2api'
 
 // Auth state
+const user = computed(() => authStore.user)
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const isAdmin = computed(() => authStore.isAdmin)
 const dashboardPath = computed(() => isAdmin.value ? '/admin/dashboard' : '/dashboard')
-const userInitial = computed(() => {
-  const user = authStore.user
-  if (!user || !user.email) return ''
-  return user.email.charAt(0).toUpperCase()
+const consoleEntryPath = computed(() => isAuthenticated.value ? dashboardPath.value : '/login')
+const plansEntryPath = computed(() => isAuthenticated.value ? '/purchase' : '/login')
+const avatarUrl = computed(() => user.value?.avatar_url?.trim() || '')
+const userInitials = computed(() => {
+  if (!user.value) return ''
+  if (user.value.username) {
+    return user.value.username.substring(0, 2).toUpperCase()
+  }
+  if (user.value.email) {
+    return user.value.email.split('@')[0].substring(0, 2).toUpperCase()
+  }
+  return ''
+})
+const displayName = computed(() => {
+  if (!user.value) return ''
+  return user.value.username || user.value.email?.split('@')[0] || ''
 })
 
 // Current year for footer
 const currentYear = computed(() => new Date().getFullYear())
+const themeToggleLabel = computed(() => (
+  isDark.value ? t('nav.lightMode') : t('nav.darkMode')
+))
 
 // Toggle theme
 function toggleTheme() {
   isDark.value = !isDark.value
   document.documentElement.classList.toggle('dark', isDark.value)
   localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+}
+
+function toggleDropdown() {
+  dropdownOpen.value = !dropdownOpen.value
+}
+
+function closeDropdown() {
+  dropdownOpen.value = false
+}
+
+function handleGuestLogin() {
+  router.push('/login')
+}
+
+async function handleLogout() {
+  closeDropdown()
+  try {
+    await authStore.logout()
+  } catch (error) {
+    console.error('Logout error:', error)
+  }
+  await router.push('/login')
+}
+
+function handleClickOutside(event: MouseEvent) {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+    closeDropdown()
+  }
 }
 
 // Initialize theme
@@ -813,19 +1051,59 @@ function initTheme() {
 
 onMounted(() => {
   initTheme()
+  document.addEventListener('click', handleClickOutside)
 
   // Check auth state
   authStore.checkAuth()
-  loadSupportedModels()
+  // loadSupportedModels()
 
   // Ensure public settings are loaded (will use cache if already loaded from injected config)
   if (!appStore.publicSettingsLoaded) {
     appStore.fetchPublicSettings()
   }
 })
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>
+.home-header-icon-button {
+  @apply flex h-9 w-9 items-center justify-center rounded-md border border-transparent text-gray-600 transition-colors hover:border-gray-200 hover:bg-gray-100;
+  @apply dark:text-gray-400 dark:hover:border-dark-800 dark:hover:bg-dark-800;
+}
+
+.home-header-action {
+  @apply inline-flex h-10 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900;
+  @apply dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-dark-50;
+}
+
+.home-header-link {
+  @apply inline-flex h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white/80 px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900;
+  @apply dark:border-dark-800 dark:bg-dark-900/70 dark:text-dark-100 dark:hover:bg-dark-800 dark:hover:text-white;
+}
+
+.home-header-console-link {
+  @apply shrink-0 whitespace-nowrap;
+}
+
+.home-header-link-primary {
+  @apply border-gray-950 bg-gray-950 text-white hover:border-primary-400 hover:bg-gray-950 hover:text-white;
+  @apply dark:border-dark-50 dark:bg-dark-950 dark:hover:border-primary-400;
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: scale(0.95) translateY(-4px);
+}
+
 /* Terminal Container */
 .terminal-container {
   position: relative;

@@ -129,6 +129,7 @@ function checkoutInfoWithPlansFixture() {
           daily_limit_usd: null,
           weekly_limit_usd: null,
           monthly_limit_usd: null,
+          supported_model_scopes: ['claude'],
           features: [],
           group_platform: 'openai',
           sort_order: 1,
@@ -138,6 +139,83 @@ function checkoutInfoWithPlansFixture() {
       ],
     },
   }
+}
+
+function checkoutInfoWithRenewalPlansFixture() {
+  return {
+    data: {
+      ...checkoutInfoFixture().data,
+      plans: [
+        {
+          id: 11,
+          group_id: 2,
+          name: 'Codex Mini',
+          description: '',
+          price: 45,
+          original_price: 0,
+          validity_days: 30,
+          validity_unit: 'day',
+          rate_multiplier: 1,
+          daily_limit_usd: null,
+          weekly_limit_usd: null,
+          monthly_limit_usd: null,
+          supported_model_scopes: ['claude'],
+          features: [],
+          group_platform: 'openai',
+          sort_order: 1,
+          for_sale: true,
+          group_name: 'OpenAI',
+        },
+        {
+          id: 12,
+          group_id: 2,
+          name: 'Codex Lite',
+          description: '',
+          price: 75,
+          original_price: 0,
+          validity_days: 30,
+          validity_unit: 'day',
+          rate_multiplier: 1,
+          daily_limit_usd: null,
+          weekly_limit_usd: null,
+          monthly_limit_usd: null,
+          supported_model_scopes: ['claude'],
+          features: [],
+          group_platform: 'openai',
+          sort_order: 2,
+          for_sale: true,
+          group_name: 'OpenAI',
+        },
+        {
+          id: 21,
+          group_id: 3,
+          name: 'Claude Pro',
+          description: '',
+          price: 199,
+          original_price: 0,
+          validity_days: 30,
+          validity_unit: 'day',
+          rate_multiplier: 1,
+          daily_limit_usd: null,
+          weekly_limit_usd: null,
+          monthly_limit_usd: null,
+          supported_model_scopes: ['claude'],
+          features: [],
+          group_platform: 'anthropic',
+          sort_order: 3,
+          for_sale: true,
+          group_name: 'Anthropic',
+        },
+      ],
+    },
+  }
+}
+
+function unwrapSetupValue<T>(value: unknown): T {
+  if (value && typeof value === 'object' && 'value' in value) {
+    return (value as { value: T }).value
+  }
+  return value as T
 }
 
 function jsapiOrderFixture(resumeToken: string) {
@@ -262,6 +340,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
 
     const wrapper = shallowMount(PaymentView, {
       global: {
+        renderStubDefaultSlot: true,
         stubs: {
           Teleport: true,
           Transition: false,
@@ -410,5 +489,213 @@ describe('PaymentView WeChat JSAPI flow', () => {
     expect(showWarning).toHaveBeenCalledWith('payment.errors.mobilePaymentFallbackToQr')
     expect(showError).not.toHaveBeenCalled()
     expect(window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toContain('weixin://wxpay/bizpayurl?pr=fallback-native')
+  })
+})
+
+describe('PaymentView subscription name filters', () => {
+  beforeEach(() => {
+    routeState.path = '/purchase'
+    routeState.query = {
+      tab: 'subscription',
+    }
+    routerReplace.mockReset().mockResolvedValue(undefined)
+    routerPush.mockReset().mockResolvedValue(undefined)
+    routerResolve.mockClear()
+    createOrder.mockReset()
+    refreshUser.mockReset()
+    fetchActiveSubscriptions.mockReset().mockResolvedValue(undefined)
+    showError.mockReset()
+    showInfo.mockReset()
+    showWarning.mockReset()
+    window.localStorage.clear()
+    ;(window as Window & { WeixinJSBridge?: { invoke: typeof bridgeInvoke } }).WeixinJSBridge = undefined
+    getCheckoutInfo.mockReset().mockResolvedValue({
+      data: {
+        ...checkoutInfoFixture().data,
+        plans: [
+          {
+            id: 1,
+            group_id: 11,
+            name: 'clAuDe Pro',
+            description: '',
+            price: 199,
+            original_price: 0,
+            validity_days: 30,
+            validity_unit: 'day',
+            rate_multiplier: 1,
+            daily_limit_usd: null,
+            weekly_limit_usd: null,
+            monthly_limit_usd: null,
+            supported_model_scopes: ['claude'],
+            features: [],
+            group_platform: 'anthropic',
+            sort_order: 1,
+            for_sale: true,
+            group_name: 'Anthropic',
+          },
+          {
+            id: 2,
+            group_id: 12,
+            name: 'Codex Team',
+            description: '',
+            price: 249,
+            original_price: 0,
+            validity_days: 30,
+            validity_unit: 'day',
+            rate_multiplier: 1,
+            daily_limit_usd: null,
+            weekly_limit_usd: null,
+            monthly_limit_usd: null,
+            supported_model_scopes: ['claude', 'gemini_text'],
+            features: [],
+            group_platform: 'gemini',
+            sort_order: 2,
+            for_sale: true,
+            group_name: 'Gemini',
+          },
+          {
+            id: 3,
+            group_id: 13,
+            name: 'CODEX Starter',
+            description: '',
+            price: 299,
+            original_price: 0,
+            validity_days: 30,
+            validity_unit: 'day',
+            rate_multiplier: 1,
+            daily_limit_usd: null,
+            weekly_limit_usd: null,
+            monthly_limit_usd: null,
+            supported_model_scopes: ['gemini_image'],
+            features: [],
+            group_platform: 'gemini',
+            sort_order: 3,
+            for_sale: true,
+            group_name: 'Gemini',
+          },
+          {
+            id: 4,
+            group_id: 14,
+            name: 'Gemini Mixed',
+            description: '',
+            price: 159,
+            original_price: 0,
+            validity_days: 30,
+            validity_unit: 'day',
+            rate_multiplier: 1,
+            daily_limit_usd: null,
+            weekly_limit_usd: null,
+            monthly_limit_usd: null,
+            supported_model_scopes: ['gemini_text'],
+            features: [],
+            group_platform: 'gemini',
+            sort_order: 4,
+            for_sale: true,
+            group_name: 'Gemini',
+          },
+        ],
+      },
+    })
+  })
+
+  it('filters subscription plans by plan name, case-insensitively', async () => {
+    const wrapper = shallowMount(PaymentView, {
+      global: {
+        renderStubDefaultSlot: true,
+        stubs: {
+          Teleport: true,
+          Transition: false,
+        },
+      },
+    })
+
+    await flushPromises()
+    await flushPromises()
+
+    const filteredPlanCount = () => {
+      const state = (wrapper.vm as unknown as { $: { setupState: Record<string, unknown> } }).$.setupState.filteredPlans
+      if (Array.isArray(state)) return state.length
+      return (state as { value: unknown[] }).value.length
+    }
+
+    expect(filteredPlanCount()).toBe(4)
+
+    await wrapper.get('[data-testid="plan-name-filter-claude"]').trigger('click')
+    expect(filteredPlanCount()).toBe(1)
+
+    await wrapper.get('[data-testid="plan-name-filter-openai"]').trigger('click')
+    expect(filteredPlanCount()).toBe(2)
+
+    await wrapper.get('[data-testid="plan-name-filter-all"]').trigger('click')
+    expect(filteredPlanCount()).toBe(4)
+  })
+})
+
+describe('PaymentView renewal navigation', () => {
+  beforeEach(() => {
+    routeState.path = '/purchase'
+    routeState.query = {
+      tab: 'subscription',
+      group: '2',
+    }
+    routerReplace.mockReset().mockResolvedValue(undefined)
+    routerPush.mockReset().mockResolvedValue(undefined)
+    routerResolve.mockClear()
+    createOrder.mockReset()
+    refreshUser.mockReset()
+    fetchActiveSubscriptions.mockReset().mockResolvedValue(undefined)
+    showError.mockReset()
+    showInfo.mockReset()
+    showWarning.mockReset()
+    window.localStorage.clear()
+    ;(window as Window & { WeixinJSBridge?: { invoke: typeof bridgeInvoke } }).WeixinJSBridge = undefined
+    getCheckoutInfo.mockReset().mockResolvedValue(checkoutInfoWithRenewalPlansFixture())
+  })
+
+  it('does not open the renewal modal when only group is present and multiple plans match', async () => {
+    const wrapper = shallowMount(PaymentView, {
+      global: {
+        renderStubDefaultSlot: true,
+        stubs: {
+          Teleport: true,
+          Transition: false,
+        },
+      },
+    })
+
+    await flushPromises()
+    await flushPromises()
+
+    const setupState = (wrapper.vm as unknown as { $: { setupState: Record<string, unknown> } }).$.setupState
+    expect(unwrapSetupValue<boolean>(setupState.showRenewalModal)).toBe(false)
+    expect(unwrapSetupValue<unknown>(setupState.selectedPlan)).toBeNull()
+    expect(unwrapSetupValue<string>(setupState.activeTab)).toBe('subscription')
+  })
+
+  it('selects the exact plan when plan_id is present in the route query', async () => {
+    routeState.query = {
+      tab: 'subscription',
+      group: '2',
+      plan_id: '12',
+    }
+
+    const wrapper = shallowMount(PaymentView, {
+      global: {
+        renderStubDefaultSlot: true,
+        stubs: {
+          Teleport: true,
+          Transition: false,
+        },
+      },
+    })
+
+    await flushPromises()
+    await flushPromises()
+
+    const setupState = (wrapper.vm as unknown as { $: { setupState: Record<string, unknown> } }).$.setupState
+    const selectedPlan = unwrapSetupValue<{ id: number } | null>(setupState.selectedPlan)
+    expect(unwrapSetupValue<boolean>(setupState.showRenewalModal)).toBe(false)
+    expect(selectedPlan?.id).toBe(12)
+    expect(unwrapSetupValue<string>(setupState.activeTab)).toBe('subscription')
   })
 })

@@ -149,7 +149,35 @@
 
       <!-- Regular User View -->
       <template v-else-if="!appStore.backendModeEnabled">
-        <div class="sidebar-section">
+        <div v-if="userPublicNavItems.length" class="sidebar-section">
+          <div class="sidebar-section-title" :class="{ 'sidebar-section-title-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">
+            <span class="sidebar-section-title-text" :class="{ 'sidebar-section-title-text-collapsed': sidebarCollapsed }">
+              {{ t('nav.publicArea') }}
+            </span>
+          </div>
+
+          <router-link
+            v-for="item in userPublicNavItems"
+            :key="item.path"
+            :to="item.path"
+            class="sidebar-link mb-1"
+            :class="{ 'sidebar-link-active': isActive(item.path), 'sidebar-link-collapsed': sidebarCollapsed }"
+            :title="sidebarCollapsed ? item.label : undefined"
+            @click="handleMenuItemClick(item.path)"
+          >
+            <span v-if="item.iconSvg" class="h-5 w-5 flex-shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
+            <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
+            <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
+          </router-link>
+        </div>
+
+        <div v-if="userNavItems.length" class="sidebar-section">
+          <div class="sidebar-section-title" :class="{ 'sidebar-section-title-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">
+            <span class="sidebar-section-title-text" :class="{ 'sidebar-section-title-text-collapsed': sidebarCollapsed }">
+              {{ t('nav.myAccount') }}
+            </span>
+          </div>
+
           <router-link
             v-for="item in userNavItems"
             :key="item.path"
@@ -720,17 +748,27 @@ function finalizeNav(items: NavItem[]): NavItem[] {
   return authStore.isSimpleMode ? visible.filter(item => !item.hideInSimpleMode) : visible
 }
 
-// User navigation items (for regular users)
-const userNavItems = computed((): NavItem[] => finalizeNav(buildSelfNavItems(true)))
-
-const adminSelfNavItems = computed((): NavItem[] => finalizeNav(buildSelfNavItems(false)))
 const isPublicNavItem = (item: NavItem) => item.path === '/leaderboard'
+function splitSelfNavItems(items: NavItem[]): { publicItems: NavItem[]; personalItems: NavItem[] } {
+  return {
+    publicItems: items.filter(isPublicNavItem),
+    personalItems: items.filter(item => !isPublicNavItem(item)),
+  }
+}
+
+const userSelfNavSections = computed(() => splitSelfNavItems(finalizeNav(buildSelfNavItems(true))))
+
+// User navigation items (for regular users)
+const userNavItems = computed((): NavItem[] => userSelfNavSections.value.personalItems)
+const userPublicNavItems = computed((): NavItem[] => userSelfNavSections.value.publicItems)
+
+const adminSelfNavSections = computed(() => splitSelfNavItems(finalizeNav(buildSelfNavItems(false))))
 
 // Personal navigation items (for admin's "My Account" section, without Dashboard).
 // Admins access 可用渠道 from this section just like regular users — there is no
 // separate admin entry, since the page is purely a user-facing view.
-const personalNavItems = computed((): NavItem[] => adminSelfNavItems.value.filter(item => !isPublicNavItem(item)))
-const publicNavItems = computed((): NavItem[] => adminSelfNavItems.value.filter(isPublicNavItem))
+const personalNavItems = computed((): NavItem[] => adminSelfNavSections.value.personalItems)
+const publicNavItems = computed((): NavItem[] => adminSelfNavSections.value.publicItems)
 
 // Custom menu items filtered by visibility
 const customMenuItemsForUser = computed(() => {

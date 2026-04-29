@@ -151,3 +151,26 @@ func TestSettingService_GetPublicSettings_FallsBackToConfigForWeChatOAuthCapabil
 	require.False(t, settings.WeChatOAuthMPEnabled)
 	require.False(t, settings.WeChatOAuthMobileEnabled)
 }
+
+func TestSettingService_GetPublicSettings_NormalizesLegacySiteSubtitle(t *testing.T) {
+	repo := &settingPublicRepoStub{
+		values: map[string]string{
+			SettingKeySiteSubtitle: "Subscription to API Conversion Platform",
+		},
+	}
+	svc := NewSettingService(repo, &config.Config{})
+
+	settings, err := svc.GetPublicSettings(context.Background())
+	require.NoError(t, err)
+	require.Equal(t, defaultSiteSubtitle, settings.SiteSubtitle)
+}
+
+func TestSettingService_ParseSettings_NormalizesLegacySiteSubtitle(t *testing.T) {
+	svc := NewSettingService(&settingPublicRepoStub{values: map[string]string{}}, &config.Config{})
+
+	settings := svc.parseSettings(map[string]string{
+		SettingKeySiteSubtitle: "Subscription to API Conversion Platform",
+	})
+
+	require.Equal(t, defaultSiteSubtitle, settings.SiteSubtitle)
+}

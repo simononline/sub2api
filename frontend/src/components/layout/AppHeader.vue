@@ -41,6 +41,19 @@
         <!-- Language Switcher -->
         <LocaleSwitcher />
 
+        <!-- Theme Toggle -->
+        <button
+          type="button"
+          @click="toggleTheme"
+          class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white"
+          :title="themeToggleLabel"
+          :aria-label="themeToggleLabel"
+        >
+          <Icon v-if="isDark" name="sun" size="sm" />
+          <Icon v-else name="moon" size="sm" />
+          <span class="hidden sm:inline">{{ themeToggleLabel }}</span>
+        </button>
+
         <!-- Subscription Progress (for users with active subscriptions) -->
         <SubscriptionProgressMini v-if="user" />
 
@@ -237,6 +250,11 @@ const dropdownRef = ref<HTMLElement | null>(null)
 const contactInfo = computed(() => appStore.contactInfo)
 const docUrl = computed(() => appStore.docUrl)
 const avatarUrl = computed(() => user.value?.avatar_url?.trim() || '')
+const isDark = ref(document.documentElement.classList.contains('dark'))
+const themeToggleLabel = computed(() => (
+  isDark.value ? t('nav.lightMode') : t('nav.darkMode')
+))
+let themeObserver: MutationObserver | null = null
 
 // 只在标准模式的管理员下显示新手引导按钮
 const showOnboardingButton = computed(() => {
@@ -290,6 +308,17 @@ function toggleMobileSidebar() {
   appStore.toggleMobileSidebar()
 }
 
+function syncThemeState() {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
+function toggleTheme() {
+  const nextThemeIsDark = !isDark.value
+  document.documentElement.classList.toggle('dark', nextThemeIsDark)
+  localStorage.setItem('theme', nextThemeIsDark ? 'dark' : 'light')
+  isDark.value = nextThemeIsDark
+}
+
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value
 }
@@ -322,10 +351,18 @@ function handleClickOutside(event: MouseEvent) {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  syncThemeState()
+  themeObserver = new MutationObserver(syncThemeState)
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  })
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
+  themeObserver?.disconnect()
+  themeObserver = null
 })
 </script>
 

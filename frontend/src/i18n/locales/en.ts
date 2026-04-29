@@ -2,24 +2,26 @@ export default {
   // Home Page
   home: {
     viewOnGithub: 'View on GitHub',
-    viewDocs: 'View Documentation',
+    viewDocs: 'API Documentation',
+    viewPlans: 'View Plans',
     docs: 'Docs',
     switchToLight: 'Switch to Light Mode',
     switchToDark: 'Switch to Dark Mode',
     dashboard: 'Dashboard',
     login: 'Login',
     backToHome: 'Back Home',
-    getStarted: 'Get Started',
+    getStarted: 'Start Service',
     goToDashboard: 'Go to Dashboard',
-    poolNotice: 'We use a pool built from a large number of configured PRO accounts to keep platform calls and data handling stable.',
-    heroBadge: 'GPT-only API service',
-    heroSubtitle: 'One Key, Stable GPT Access',
-    heroDescription: 'Focused on GPT services with an OpenAI-compatible API, resource-pool routing, usage-based billing, and engineering support for apps, teams, and automation workflows.',
+    poolNotice: 'Provide unified API access, authentication, billing, logs, model routing, and retry capability so developers can hide upstream complexity behind one stable service.',
+    heroBadge: 'AI coding assistance service',
+    heroTitle: 'AI coding and text generation services for developers',
+    heroSubtitle: 'Stable model access for code generation, text generation, rewriting, program explanation, and application integration across individual, team, and enterprise use cases.',
+    heroDescription: 'Users purchase this platform service layer, including unified API access, authentication, billing, logging, and developer-oriented optimization, rather than any third-party account entitlement or native billing resource.',
     tags: {
-      subscriptionToApi: 'GPT Subscription to API',
-      stickySession: 'GPT Session Persistence',
-      realtimeBilling: 'Real-time Usage Billing',
-      engineerSupport: 'Engineer Support'
+      subscriptionToApi: 'Unified API Access',
+      stickySession: 'Unified Auth & Logs',
+      realtimeBilling: 'Billing & Quotas',
+      engineerSupport: 'Routing & Failover'
     },
     // Pain points section
     painPoints: {
@@ -49,142 +51,168 @@ export default {
       subtitle: 'Three simple steps to stress-free AI access'
     },
     features: {
-      unifiedGateway: 'OpenAI-Compatible Gateway',
-      unifiedGatewayDesc: 'Keep the familiar OpenAI API workflow. Replace the Base URL and API key to connect GPT services.',
-      multiAccount: 'GPT Resource Pool Routing',
-      multiAccountDesc: 'Use resource pools, load balancing, and retries to reduce the impact of single-account limits.',
-      balanceQuota: 'Usage Billing & Quotas',
-      balanceQuotaDesc: 'Track spend by actual usage with balance, quota, and usage details for easier team cost control.'
+      unifiedGateway: 'Unified API Service',
+      unifiedGatewayDesc: 'Use one API shape and one authentication method for code generation and text processing, instead of adapting to multiple upstream formats.',
+      multiAccount: 'Model Routing & Failover',
+      multiAccountDesc: 'Route requests, retry failures, and switch paths during incidents so developers do not have to manage upstream complexity directly.',
+      balanceQuota: 'Logs, Billing & Quotas',
+      balanceQuotaDesc: 'Centralize request logs, quota management, usage statistics, and billing records for cleaner team cost control.'
     },
     // Comparison section
     comparison: {
       title: 'Why Choose Us?',
       headers: {
         feature: 'Comparison',
-        official: 'Official Subscriptions',
+        official: 'Direct Integration',
         us: 'Our Platform'
       },
       items: {
         pricing: {
           feature: 'Pricing',
-          official: 'Fixed subscriptions or separate billing',
-          us: 'Usage-based billing with flexible top-ups'
+          official: 'Open and settle each service separately',
+          us: 'Unified billing with plans or quota packages'
         },
         models: {
-          feature: 'Service Scope',
-          official: 'Connect official GPT services yourself',
-          us: 'Focused GPT access with unified routing'
+          feature: 'API & Auth',
+          official: 'Maintain different upstream formats and keys',
+          us: 'One API pattern and one authentication flow'
         },
         management: {
-          feature: 'Account Management',
-          official: 'Maintain accounts, subscriptions, and keys separately',
-          us: 'One key for calls, quotas, and usage'
+          feature: 'Logs & Management',
+          official: 'Build logs, stats, and quota tools yourself',
+          us: 'Unified logs, usage stats, and quota controls'
         },
         stability: {
           feature: 'Stability',
-          official: 'Handle single-account limits yourself',
-          us: 'Pool routing, retries, and failover'
+          official: 'Handle upstream incidents and retries yourself',
+          us: 'Model routing, retries, and baseline failover'
         },
         control: {
-          feature: 'Usage Control',
-          official: 'Build metering and limits yourself',
-          us: 'Quotas, details, and trend visibility'
+          feature: 'Coding Workflow Support',
+          official: 'Adapt prompts and outputs by yourself',
+          us: 'Built for code generation, explanation, refactoring, and text tasks'
         }
       }
     },
     providers: {
-      title: 'GPT Service Scope',
-      description: 'The homepage now presents GPT-related capabilities only, so users do not assume Claude, Gemini, or other services are available.',
-      supported: 'Supported',
+      title: 'Core Service Capabilities',
+      description: 'Built for developer integration and business workflows that rely on coding and technical content tasks.',
+      supported: 'Core',
       soon: 'Soon',
-      gptCore: 'GPT Model Access',
-      gptCoreDesc: 'A stable API entry for GPT chat, coding, summarization, tool calling, and common automation scenarios.',
-      openaiCompatible: 'OpenAI API Compatible',
-      openaiCompatibleDesc: 'Works with common SDKs, low-code tools, and self-hosted systems with a clear migration path.',
-      usageControl: 'Quota & Usage Management',
-      usageControlDesc: 'Record requests, tokens, and spend in real time for personal budgets and team cost allocation.',
+      gptCore: 'Code Generation & Completion',
+      gptCoreDesc: 'Generate code snippets from natural-language instructions for common programming tasks, functions, scripts, and structured output.',
+      openaiCompatible: 'Code Explanation & Refactoring',
+      openaiCompatibleDesc: 'Help developers understand existing logic, add explanations, optimize structure, and improve readability.',
+      usageControl: 'Text Generation & Content Processing',
+      usageControlDesc: 'Support technical writing, summarization, rewriting, Q&A generation, and prompt processing workflows.',
+      apiAccess: 'API Integration Capability',
+      apiAccessDesc: 'Provide unified endpoints, authentication, quota management, and call statistics for websites, apps, and internal systems.',
       claude: 'Claude',
       gemini: 'Gemini',
       antigravity: 'Antigravity',
       more: 'More'
     },
     supportedModels: {
-      title: 'Currently Supported GPT Models',
-      description: 'The model list is read from a public API first and reflects OpenAI / GPT models available through active channels.',
+      title: 'Currently Available Models',
+      description: 'The model list is loaded from the public API first and reflects OpenAI-compatible model capability exposed by active channels.',
       loading: 'Loading model list...',
       count: '{count} models',
       live: 'Loaded from live API',
-      fallback: 'Showing the default GPT allowlist while the API is unavailable',
+      fallback: 'Showing the default allowlist while the API is unavailable',
       empty: 'No displayable models were found',
       channelCount: '{count} routes'
     },
     serviceHighlights: {
-      title: 'Core Service Guarantees',
-      description: 'The page emphasizes stability, speed, security, and support, based on the main needs of API relay and account-pool services.',
+      title: 'Use Cases',
+      description: 'Suitable for coding, content processing, and workflow automation inside products, tools, and internal systems.',
       items: {
-        pool: {
-          title: 'Resource Pool Capacity',
-          desc: 'Unified upstream resource routing reduces the impact of single-account throttling or incidents.'
+        tooling: {
+          title: 'Developer Tooling',
+          desc: 'Embed the unified API into editor plugins, scripts, and internal engineering tools.'
         },
-        speed: {
-          title: 'Stable and Fast',
-          desc: 'Optimized request paths for high-frequency chats, plugin calls, and automation tasks.'
+        assistant: {
+          title: 'AI Coding Assistant',
+          desc: 'Support code completion, explanation, refactoring, and debugging assistance in daily development.'
         },
-        security: {
-          title: 'Key Isolation',
-          desc: 'Users call with platform API keys, making permissions, quotas, and risk control easier to centralize.'
+        supportDesk: {
+          title: 'Ticket and Support Automation',
+          desc: 'Handle standardized Q&A, ticket classification, and reply draft generation.'
         },
-        support: {
-          title: 'Engineer Support',
-          desc: 'Get help with integration checks, SDK configuration, and API error diagnosis.'
+        docs: {
+          title: 'Technical Documentation',
+          desc: 'Generate API notes, change logs, test instructions, and delivery documents.'
+        },
+        rewrite: {
+          title: 'Content Rewriting',
+          desc: 'Organize, rewrite, expand, and normalize technical articles and knowledge-base content.'
+        },
+        systems: {
+          title: 'Internal System Upgrades',
+          desc: 'Add text and coding capability to admin panels, business systems, and automated workflows.'
+        },
+        knowledge: {
+          title: 'Enterprise Knowledge Q&A',
+          desc: 'Deliver question-answering for team knowledge bases, process libraries, and FAQs.'
+        },
+        education: {
+          title: 'Education and Training',
+          desc: 'Useful for programming practice, guided explanations, exercise feedback, and example generation.'
         }
       }
     },
     workflow: {
-      title: 'Connect GPT in Three Steps',
-      description: 'A lightweight path from signup to API calls for existing projects.',
+      title: 'Integrate in Three Steps',
+      description: 'A lightweight path from signup to production use in existing projects.',
       steps: {
         createKey: {
-          title: 'Create an API Key',
-          desc: 'Sign in, create a key in the dashboard, and assign quota based on your usage scenario.'
+          title: 'Create a Platform API Key',
+          desc: 'After opening service access, generate a platform key in the dashboard and assign quotas by project or team.'
         },
         callApi: {
-          title: 'Replace the Base URL',
-          desc: 'Update the Base URL in your OpenAI SDK or compatible tool while keeping the familiar request format.'
+          title: 'Use the Unified Endpoint',
+          desc: 'Send requests from your SDK, website, app, or internal system through one endpoint and one auth method.'
         },
         monitor: {
-          title: 'Monitor Usage and Cost',
-          desc: 'Track requests, tokens, balance, and spend trends in the dashboard, then adjust quotas as needed.'
+          title: 'Review Logs and Quotas',
+          desc: 'Track request logs, quota usage, billing records, and basic stats in the dashboard to keep costs under control.'
         }
       }
     },
     faq: {
       title: 'FAQ',
-      description: 'Common questions about GPT API access, compatibility, security, and support.',
+      description: 'Common questions about developer integration, compatibility, cost control, and platform service boundaries.',
       items: {
-        difference: {
-          question: 'How is this different from using official GPT directly?',
-          answer: 'The service still targets GPT capabilities, while the platform adds unified keys, resource-pool routing, usage records, and quota management.'
+        service: {
+          question: 'What do you sell?',
+          answer: 'We provide AI text generation and coding assistance services. After purchase, users receive model-call service quota for API calls, text processing, code generation, code explanation, and related workflows.'
         },
-        compatibility: {
-          question: 'Can existing OpenAI SDKs be used?',
-          answer: 'The page positions the service as an OpenAI-compatible gateway. In most cases you replace the Base URL and API key; exact parameters depend on your service configuration and docs.'
+        virtualAssets: {
+          question: 'Do you sell virtual currency, digital tokens, or investment products?',
+          answer: 'No.\nThis platform provides technical services and model-call capability for developers and enterprise users. It does not involve virtual currency, token issuance, investment, wealth management, or secondary-market trading services.'
         },
-        security: {
-          question: 'How are accounts and keys isolated?',
-          answer: 'Users only hold platform API keys and manage quotas or status in the dashboard instead of spreading upstream accounts across projects.'
+        usage: {
+          question: 'How do users access the service after purchase?',
+          answer: 'After purchase, users can consume the corresponding service quota through the platform dashboard or API endpoints. Calling methods, parameters, usage rules, and examples are defined in the platform documentation.'
         },
-        support: {
-          question: 'What happens when an integration fails?',
-          answer: 'Use request logs, quota records, and technical support to diagnose model parameters, network paths, key permissions, and upstream responses.'
+        scenarios: {
+          question: 'What scenarios are these services suitable for?',
+          answer: 'Suitable for:\nCode generation、Code explanation、Code refactoring、Comment generation、Text generation、Content rewriting、Technical documentation writing、Automated workflow integration、Intelligent processing in internal enterprise systems'
+        },
+        refund: {
+          question: 'Can users request a refund?',
+          answer: 'Orders that are unused or otherwise meet the refund policy may be handled within the policy scope.\n\nIf there has been clear usage consumption, abnormal usage, policy-violating usage, or the request is outside refund conditions, the platform may handle it according to service rules.\n\nPlease refer to the refund policy page for details.'
+        },
+        official: {
+          question: 'Are you an official channel for any single model vendor?',
+          answer: 'This platform provides its own technical service layer and interface capability.\n\nIf specific model names appear on the site, they are used only to describe model compatibility, supported scenarios, or underlying technical solutions. They do not mean the platform is providing third-party account entitlement, native billing supplementation services, virtual currency, or transferable digital assets of any third-party provider.'
         }
       }
     },
     // CTA section
     cta: {
-      title: 'Ready to Connect GPT API?',
-      description: 'The existing gateway, billing, and usage features stay in place while the homepage clearly focuses on GPT services.',
-      button: 'Start Using'
+      title: 'Ready to integrate AI coding and text generation services?',
+      description: 'Start from one unified interface and ship code generation, text processing, and developer workflow capability faster.',
+      button: 'Start Service'
     },
     footer: {
       allRightsReserved: 'All rights reserved.'
@@ -5189,7 +5217,7 @@ export default {
         siteNamePlaceholder: 'WeShare',
         siteNameHint: 'Displayed in emails and page titles',
         siteSubtitle: 'Site Subtitle',
-        siteSubtitlePlaceholder: 'Subscription to API Conversion Platform',
+        siteSubtitlePlaceholder: '立志成为天才程序员的坚实后盾',
         siteSubtitleHint: 'Displayed on login and register pages',
         apiBaseUrl: 'API Base URL',
         apiBaseUrlPlaceholder: 'https://api.example.com',
@@ -6310,6 +6338,16 @@ export default {
     subscribeNow: 'Subscribe Now',
     renewNow: 'Renew',
     selectPlan: 'Select Plan',
+    rechargeHeadline: 'Top up with a cleaner flow',
+    rechargeHint: 'Pick an amount and payment method, then create the order in one step.',
+    subscriptionHeadline: 'Browse subscription plans by category',
+    subscriptionHint: 'Plans are grouped by name, case-insensitively. OpenAI matches Codex, Claude matches Claude.',
+    availablePlans: 'Plans',
+    planCategories: 'Categories',
+    planFiltersTitle: 'Filter by Plan Name',
+    planFiltersHint: 'Plans are grouped by name, case-insensitively. OpenAI matches Codex, Claude matches Claude.',
+    planFiltersAll: 'All',
+    noPlansForFilter: 'No plans match the selected filter',
     planFeatures: 'Features',
     planCard: {
       rate: 'Rate',

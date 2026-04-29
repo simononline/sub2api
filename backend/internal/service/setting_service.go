@@ -67,6 +67,8 @@ const versionBoundsErrorTTL = 5 * time.Second
 // versionBoundsDBTimeout singleflight 内 DB 查询超时，独立于请求 context
 const versionBoundsDBTimeout = 5 * time.Second
 
+const defaultSiteSubtitle = "立志成为天才程序员的坚实后盾"
+
 // cachedBackendMode Backend Mode cache (in-process, 60s TTL)
 type cachedBackendMode struct {
 	value     bool
@@ -512,7 +514,7 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		TurnstileSiteKey:                 settings[SettingKeyTurnstileSiteKey],
 		SiteName:                         s.getStringOrDefault(settings, SettingKeySiteName, "Sub2API"),
 		SiteLogo:                         settings[SettingKeySiteLogo],
-		SiteSubtitle:                     s.getStringOrDefault(settings, SettingKeySiteSubtitle, "Subscription to API Conversion Platform"),
+		SiteSubtitle:                     normalizeLegacySiteSubtitle(s.getStringOrDefault(settings, SettingKeySiteSubtitle, defaultSiteSubtitle)),
 		APIBaseURL:                       settings[SettingKeyAPIBaseURL],
 		ContactInfo:                      settings[SettingKeyContactInfo],
 		DocURL:                           settings[SettingKeyDocURL],
@@ -1149,7 +1151,7 @@ func (s *SettingService) buildSystemSettingsUpdates(ctx context.Context, setting
 	// OEM设置
 	updates[SettingKeySiteName] = settings.SiteName
 	updates[SettingKeySiteLogo] = settings.SiteLogo
-	updates[SettingKeySiteSubtitle] = settings.SiteSubtitle
+	updates[SettingKeySiteSubtitle] = normalizeLegacySiteSubtitle(settings.SiteSubtitle)
 	updates[SettingKeyAPIBaseURL] = settings.APIBaseURL
 	updates[SettingKeyContactInfo] = settings.ContactInfo
 	updates[SettingKeyDocURL] = settings.DocURL
@@ -1932,7 +1934,7 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 		TurnstileSecretKeyConfigured:     settings[SettingKeyTurnstileSecretKey] != "",
 		SiteName:                         s.getStringOrDefault(settings, SettingKeySiteName, "Sub2API"),
 		SiteLogo:                         settings[SettingKeySiteLogo],
-		SiteSubtitle:                     s.getStringOrDefault(settings, SettingKeySiteSubtitle, "Subscription to API Conversion Platform"),
+		SiteSubtitle:                     normalizeLegacySiteSubtitle(s.getStringOrDefault(settings, SettingKeySiteSubtitle, defaultSiteSubtitle)),
 		APIBaseURL:                       settings[SettingKeyAPIBaseURL],
 		ContactInfo:                      settings[SettingKeyContactInfo],
 		DocURL:                           settings[SettingKeyDocURL],
@@ -2462,6 +2464,15 @@ func (s *SettingService) getStringOrDefault(settings map[string]string, key, def
 		return value
 	}
 	return defaultValue
+}
+
+func normalizeLegacySiteSubtitle(value string) string {
+	switch strings.TrimSpace(value) {
+	case "Subscription to API Conversion Platform", "订阅转 API 转换平台":
+		return defaultSiteSubtitle
+	default:
+		return value
+	}
 }
 
 // IsTurnstileEnabled 检查是否启用 Turnstile 验证

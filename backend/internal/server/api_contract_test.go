@@ -888,7 +888,7 @@ func TestAPIContracts(t *testing.T) {
 					"oidc_connect_userinfo_username_path": "",
 					"site_name": "Sub2API",
 					"site_logo": "",
-					"site_subtitle": "Subscription to API Conversion Platform",
+					"site_subtitle": "立志成为天才程序员的坚实后盾",
 					"api_base_url": "",
 					"contact_info": "",
 					"doc_url": "",
