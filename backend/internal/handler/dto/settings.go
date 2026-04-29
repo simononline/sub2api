@@ -126,6 +126,10 @@ type SystemSettings struct {
 	EnableIdentityPatch bool   `json:"enable_identity_patch"`
 	IdentityPatchPrompt string `json:"identity_patch_prompt"`
 
+	// Request prompt presets
+	EnableRequestPromptPresets bool   `json:"enable_request_prompt_presets"`
+	RequestPromptPresetsJSON   string `json:"request_prompt_presets_json"`
+
 	// Ops monitoring (vNext)
 	OpsMonitoringEnabled         bool   `json:"ops_monitoring_enabled"`
 	OpsRealtimeMonitoringEnabled bool   `json:"ops_realtime_monitoring_enabled"`

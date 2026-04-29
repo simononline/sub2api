@@ -198,6 +198,8 @@ func (h *SettingHandler) GetSettings(c *gin.Context) {
 		FallbackModelAntigravity:               settings.FallbackModelAntigravity,
 		EnableIdentityPatch:                    settings.EnableIdentityPatch,
 		IdentityPatchPrompt:                    settings.IdentityPatchPrompt,
+		EnableRequestPromptPresets:             settings.EnableRequestPromptPresets,
+		RequestPromptPresetsJSON:               settings.RequestPromptPresetsJSON,
 		OpsMonitoringEnabled:                   opsEnabled && settings.OpsMonitoringEnabled,
 		OpsRealtimeMonitoringEnabled:           settings.OpsRealtimeMonitoringEnabled,
 		OpsQueryModeDefault:                    settings.OpsQueryModeDefault,
@@ -382,6 +384,10 @@ type UpdateSettingsRequest struct {
 	// Identity patch configuration (Claude -> Gemini)
 	EnableIdentityPatch bool   `json:"enable_identity_patch"`
 	IdentityPatchPrompt string `json:"identity_patch_prompt"`
+
+	// Request prompt presets
+	EnableRequestPromptPresets bool   `json:"enable_request_prompt_presets"`
+	RequestPromptPresetsJSON   string `json:"request_prompt_presets_json"`
 
 	// Ops monitoring (vNext)
 	OpsMonitoringEnabled         *bool   `json:"ops_monitoring_enabled"`
@@ -1182,6 +1188,8 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		FallbackModelAntigravity:         req.FallbackModelAntigravity,
 		EnableIdentityPatch:              req.EnableIdentityPatch,
 		IdentityPatchPrompt:              req.IdentityPatchPrompt,
+		EnableRequestPromptPresets:       req.EnableRequestPromptPresets,
+		RequestPromptPresetsJSON:         req.RequestPromptPresetsJSON,
 		MinClaudeCodeVersion:             req.MinClaudeCodeVersion,
 		MaxClaudeCodeVersion:             req.MaxClaudeCodeVersion,
 		AllowUngroupedKeyScheduling:      req.AllowUngroupedKeyScheduling,
@@ -1506,6 +1514,8 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		FallbackModelAntigravity:               updatedSettings.FallbackModelAntigravity,
 		EnableIdentityPatch:                    updatedSettings.EnableIdentityPatch,
 		IdentityPatchPrompt:                    updatedSettings.IdentityPatchPrompt,
+		EnableRequestPromptPresets:             updatedSettings.EnableRequestPromptPresets,
+		RequestPromptPresetsJSON:               updatedSettings.RequestPromptPresetsJSON,
 		OpsMonitoringEnabled:                   updatedSettings.OpsMonitoringEnabled,
 		OpsRealtimeMonitoringEnabled:           updatedSettings.OpsRealtimeMonitoringEnabled,
 		OpsQueryModeDefault:                    updatedSettings.OpsQueryModeDefault,
@@ -1839,6 +1849,12 @@ func diffSettings(before *service.SystemSettings, after *service.SystemSettings,
 	}
 	if before.IdentityPatchPrompt != after.IdentityPatchPrompt {
 		changed = append(changed, "identity_patch_prompt")
+	}
+	if before.EnableRequestPromptPresets != after.EnableRequestPromptPresets {
+		changed = append(changed, "enable_request_prompt_presets")
+	}
+	if before.RequestPromptPresetsJSON != after.RequestPromptPresetsJSON {
+		changed = append(changed, "request_prompt_presets_json")
 	}
 	if before.OpsMonitoringEnabled != after.OpsMonitoringEnabled {
 		changed = append(changed, "ops_monitoring_enabled")

@@ -68,6 +68,15 @@ func (s *GatewayService) ForwardAsResponses(
 		}
 	}
 	anthropicReq.Model = mappedModel
+	if s.settingService != nil {
+		updatedSystem, modified, err := s.settingService.PrependRequestPromptPresetsToAnthropicSystemRaw(ctx, anthropicReq.System, PlatformAnthropic, originalModel)
+		if err != nil {
+			return nil, fmt.Errorf("apply request prompt presets: %w", err)
+		}
+		if modified {
+			anthropicReq.System = updatedSystem
+		}
+	}
 
 	logger.L().Debug("gateway forward_as_responses: model mapping applied",
 		zap.Int64("account_id", account.ID),

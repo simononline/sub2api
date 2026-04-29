@@ -52,6 +52,7 @@ type GeminiMessagesCompatService struct {
 	rateLimitService          *RateLimitService
 	httpUpstream              HTTPUpstream
 	antigravityGatewayService *AntigravityGatewayService
+	settingService            *SettingService
 	cfg                       *config.Config
 	responseHeaderFilter      *responseheaders.CompiledHeaderFilter
 }
@@ -65,6 +66,7 @@ func NewGeminiMessagesCompatService(
 	rateLimitService *RateLimitService,
 	httpUpstream HTTPUpstream,
 	antigravityGatewayService *AntigravityGatewayService,
+	settingService *SettingService,
 	cfg *config.Config,
 ) *GeminiMessagesCompatService {
 	return &GeminiMessagesCompatService{
@@ -76,6 +78,7 @@ func NewGeminiMessagesCompatService(
 		rateLimitService:          rateLimitService,
 		httpUpstream:              httpUpstream,
 		antigravityGatewayService: antigravityGatewayService,
+		settingService:            settingService,
 		cfg:                       cfg,
 		responseHeaderFilter:      compileResponseHeaderFilter(cfg),
 	}
@@ -582,6 +585,13 @@ func (s *GeminiMessagesCompatService) Forward(ctx context.Context, c *gin.Contex
 	if account.Type == AccountTypeAPIKey {
 		mappedModel = account.GetMappedModel(req.Model)
 	}
+	if s.settingService != nil {
+		var err error
+		body, _, err = s.settingService.PrependRequestPromptPresetsToAnthropicBodyBytes(ctx, body, PlatformGemini, originalModel)
+		if err != nil {
+			return nil, fmt.Errorf("apply request prompt presets: %w", err)
+		}
+	}
 
 	geminiReq, err := convertClaudeMessagesToGeminiGenerateContent(body)
 	if err != nil {
@@ -1080,6 +1090,13 @@ func (s *GeminiMessagesCompatService) ForwardNative(ctx context.Context, c *gin.
 	// 过滤掉 parts 为空的消息（Gemini API 不接受空 parts）
 	if filteredBody, err := filterEmptyPartsFromGeminiRequest(body); err == nil {
 		body = filteredBody
+	}
+	if s.settingService != nil {
+		var err error
+		body, _, err = s.settingService.ApplyRequestPromptPresetsToGeminiBody(ctx, body, originalModel)
+		if err != nil {
+			return nil, fmt.Errorf("apply request prompt presets: %w", err)
+		}
 	}
 
 	switch action {

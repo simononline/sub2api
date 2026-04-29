@@ -4100,6 +4100,13 @@ func (s *GatewayService) Forward(ctx context.Context, c *gin.Context, account *A
 
 	if account != nil && account.IsAnthropicAPIKeyPassthroughEnabled() {
 		passthroughBody := parsed.Body
+		if s.settingService != nil {
+			var err error
+			passthroughBody, _, err = s.settingService.PrependRequestPromptPresetsToAnthropicBodyBytes(ctx, passthroughBody, PlatformAnthropic, parsed.Model)
+			if err != nil {
+				return nil, fmt.Errorf("apply request prompt presets: %w", err)
+			}
+		}
 		passthroughModel := parsed.Model
 		if passthroughModel != "" {
 			if mappedModel := account.GetMappedModel(passthroughModel); mappedModel != passthroughModel {
@@ -4139,6 +4146,15 @@ func (s *GatewayService) Forward(ctx context.Context, c *gin.Context, account *A
 	reqModel := parsed.Model
 	reqStream := parsed.Stream
 	originalModel := reqModel
+	systemRaw := parsed.System
+
+	if s.settingService != nil {
+		var err error
+		body, systemRaw, _, err = s.settingService.PrependRequestPromptPresetsToAnthropicBody(ctx, body, systemRaw, PlatformAnthropic, originalModel)
+		if err != nil {
+			return nil, fmt.Errorf("apply request prompt presets: %w", err)
+		}
+	}
 
 	// === DEBUG: 打印客户端原始请求（headers + body 摘要）===
 	if c != nil {
@@ -4168,7 +4184,7 @@ func (s *GatewayService) Forward(ctx context.Context, c *gin.Context, account *A
 		// Parrot 的 transform_request 从不检查客户端 system 内容，直接覆盖。
 		systemRewritten := false
 		if !strings.Contains(strings.ToLower(reqModel), "haiku") {
-			body = rewriteSystemForNonClaudeCode(body, parsed.System)
+			body = rewriteSystemForNonClaudeCode(body, systemRaw)
 			systemRewritten = true
 		}
 

@@ -329,6 +329,7 @@ type OpenAIGatewayService struct {
 	httpUpstream          HTTPUpstream
 	deferredService       *DeferredService
 	openAITokenProvider   *OpenAITokenProvider
+	settingService        *SettingService
 	toolCorrector         *CodexToolCorrector
 	openaiWSResolver      OpenAIWSProtocolResolver
 	resolver              *ModelPricingResolver
@@ -369,6 +370,7 @@ func NewOpenAIGatewayService(
 	httpUpstream HTTPUpstream,
 	deferredService *DeferredService,
 	openAITokenProvider *OpenAITokenProvider,
+	settingService *SettingService,
 	resolver *ModelPricingResolver,
 	channelService *ChannelService,
 	balanceNotifyService *BalanceNotifyService,
@@ -397,6 +399,7 @@ func NewOpenAIGatewayService(
 		httpUpstream:          httpUpstream,
 		deferredService:       deferredService,
 		openAITokenProvider:   openAITokenProvider,
+		settingService:        settingService,
 		toolCorrector:         NewCodexToolCorrector(),
 		openaiWSResolver:      NewOpenAIWSProtocolResolver(cfg),
 		resolver:              resolver,
@@ -2001,6 +2004,17 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 	}
 	passthroughEnabled := account.IsOpenAIPassthroughEnabled()
 	if passthroughEnabled {
+		if s.settingService != nil {
+			preset := s.settingService.BuildRequestPromptPresetText(ctx, PlatformOpenAI, originalModel)
+			if preset != "" {
+				var passthroughBody map[string]any
+				if err := json.Unmarshal(originalBody, &passthroughBody); err == nil && applyRequestPromptPresetToOpenAIRequestBody(passthroughBody, preset) {
+					if updatedBody, marshalErr := json.Marshal(passthroughBody); marshalErr == nil {
+						originalBody = updatedBody
+					}
+				}
+			}
+		}
 		// 透传分支只需要轻量提取字段，避免热路径全量 Unmarshal。
 		reasoningEffort := extractOpenAIReasoningEffortFromBody(body, reqModel)
 		return s.forwardOpenAIPassthrough(ctx, c, account, originalBody, reqModel, reasoningEffort, reqStream, startTime)
@@ -2073,6 +2087,18 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 	}
 	disablePatch := func() {
 		patchDisabled = true
+	}
+
+	if s.settingService != nil {
+		preset := s.settingService.BuildRequestPromptPresetText(ctx, PlatformOpenAI, originalModel)
+		if preset != "" && applyRequestPromptPresetToOpenAIRequestBody(reqBody, preset) {
+			bodyModified = true
+			if instructions, ok := reqBody["instructions"].(string); ok {
+				markPatchSet("instructions", instructions)
+			} else {
+				disablePatch()
+			}
+		}
 	}
 
 	// 非透传模式下，instructions 为空时注入默认指令。

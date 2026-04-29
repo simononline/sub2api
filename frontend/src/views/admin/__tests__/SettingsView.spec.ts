@@ -352,6 +352,8 @@ const baseSettingsResponse = {
   fallback_model_antigravity: "",
   enable_identity_patch: false,
   identity_patch_prompt: "",
+  enable_request_prompt_presets: false,
+  request_prompt_presets_json: "",
   ops_monitoring_enabled: false,
   ops_realtime_monitoring_enabled: false,
   ops_query_mode_default: "auto",

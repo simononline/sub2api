@@ -232,6 +232,9 @@ const (
 	// Request identity patch (Claude -> Gemini systemInstruction injection)
 	SettingKeyEnableIdentityPatch = "enable_identity_patch"
 	SettingKeyIdentityPatchPrompt = "identity_patch_prompt"
+	// Request prompt presets
+	SettingKeyEnableRequestPromptPresets = "enable_request_prompt_presets"
+	SettingKeyRequestPromptPresetsJSON   = "request_prompt_presets_json"
 
 	// =========================
 	// Ops Monitoring (vNext)

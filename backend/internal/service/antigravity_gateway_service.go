@@ -1365,6 +1365,15 @@ func (s *AntigravityGatewayService) Forward(ctx context.Context, c *gin.Context,
 	}
 
 	originalModel := claudeReq.Model
+	if s.settingService != nil {
+		updatedSystem, modified, err := s.settingService.PrependRequestPromptPresetsToAnthropicSystemRaw(ctx, claudeReq.System, PlatformAntigravity, originalModel)
+		if err != nil {
+			return nil, s.writeClaudeError(c, http.StatusBadRequest, "invalid_request_error", "Invalid request prompt preset configuration")
+		}
+		if modified {
+			claudeReq.System = updatedSystem
+		}
+	}
 	mappedModel := s.getMappedModel(account, claudeReq.Model)
 	if mappedModel == "" {
 		return nil, s.writeClaudeError(c, http.StatusForbidden, "permission_error", fmt.Sprintf("model %s not in whitelist", claudeReq.Model))
@@ -2091,6 +2100,13 @@ func (s *AntigravityGatewayService) ForwardGemini(ctx context.Context, c *gin.Co
 	}
 	if len(body) == 0 {
 		return nil, s.writeGoogleError(c, http.StatusBadRequest, "Request body is empty")
+	}
+	if s.settingService != nil {
+		var err error
+		body, _, err = s.settingService.ApplyRequestPromptPresetsToGeminiBody(ctx, body, originalModel)
+		if err != nil {
+			return nil, s.writeGoogleError(c, http.StatusBadRequest, "Invalid request prompt preset configuration")
+		}
 	}
 
 	// 解析请求以获取 image_size（用于图片计费）

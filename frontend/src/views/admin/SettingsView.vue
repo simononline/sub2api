@@ -2780,6 +2780,119 @@
               </div>
             </div>
           </div>
+
+          <div class="card">
+            <div
+              class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
+            >
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                {{
+                  localText(
+                    "请求预设提示词",
+                    "Request Prompt Presets",
+                  )
+                }}
+              </h2>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {{
+                  localText(
+                    "按平台和模型匹配规则，为用户请求自动前置注入管理员预设提示词。",
+                    "Match by platform and model to prepend admin-managed prompt presets to user requests.",
+                  )
+                }}
+              </p>
+            </div>
+            <div class="space-y-5 p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <label
+                    class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    {{ localText("启用预设提示词", "Enable prompt presets") }}
+                  </label>
+                  <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                    {{
+                      localText(
+                        "OpenAI 会注入到 instructions，Anthropic 会注入到 system，Gemini 会注入到 systemInstruction。",
+                        "OpenAI presets are injected into instructions, Anthropic into system, and Gemini into systemInstruction.",
+                      )
+                    }}
+                  </p>
+                </div>
+                <Toggle v-model="form.enable_request_prompt_presets" />
+              </div>
+
+              <div>
+                <div class="mb-2 flex items-center justify-between gap-3">
+                  <label
+                    class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    {{ localText("配置 JSON", "Configuration JSON") }}
+                  </label>
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      @click="fillRequestPromptPresetTemplate"
+                    >
+                      {{ localText("填入模板", "Use template") }}
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      @click="copyRequestPromptPresetTemplate"
+                    >
+                      {{ localText("复制模板", "Copy template") }}
+                    </button>
+                  </div>
+                </div>
+                <textarea
+                  v-model="form.request_prompt_presets_json"
+                  rows="12"
+                  class="input min-h-[280px] font-mono text-xs"
+                  :placeholder="requestPromptPresetTemplate"
+                />
+                <div class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                  <p>
+                    {{
+                      localText(
+                        "platform 支持 openai、anthropic、gemini、antigravity、*。",
+                        "platform supports openai, anthropic, gemini, antigravity, and *.",
+                      )
+                    }}
+                  </p>
+                  <p>
+                    {{
+                      localText(
+                        "model_pattern 支持精确匹配，或以 * 结尾的前缀匹配。",
+                        "model_pattern supports exact match or a trailing * prefix match.",
+                      )
+                    }}
+                  </p>
+                  <p>
+                    {{
+                      localText(
+                        "mode 当前只支持 prepend，会把 text 插到原请求提示词前面。",
+                        "mode currently supports prepend only and inserts text before the original prompt.",
+                      )
+                    }}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                class="rounded-lg border border-gray-200 p-4 dark:border-dark-700"
+              >
+                <div class="mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  {{ localText("配置模板", "Template") }}
+                </div>
+                <pre
+                  class="whitespace-pre-wrap break-words rounded bg-gray-50 p-3 text-xs text-gray-700 dark:bg-dark-800 dark:text-gray-200"
+                ><code>{{ requestPromptPresetTemplate }}</code></pre>
+              </div>
+            </div>
+          </div>
+
           <!-- Web Search Emulation -->
           <div class="card">
             <div
@@ -5273,6 +5386,53 @@ const settingsTabs = [
 ];
 const { copyToClipboard } = useClipboard();
 
+const requestPromptPresetTemplate = computed(() =>
+  JSON.stringify(
+    [
+      {
+        platform: "openai",
+        model_pattern: "gpt-5*",
+        mode: "prepend",
+        text: localText(
+          "你是站点默认的编程助手。优先使用中文回答，并先给出可执行结论。",
+          "You are the site's default coding assistant. Prefer concise, actionable answers.",
+        ),
+      },
+      {
+        platform: "anthropic",
+        model_pattern: "claude*",
+        mode: "prepend",
+        text: localText(
+          "涉及密钥、令牌、数据库连接串时，禁止直接输出敏感值。",
+          "Do not output raw secrets, tokens, or database connection strings.",
+        ),
+      },
+      {
+        platform: "*",
+        model_pattern: "*",
+        mode: "prepend",
+        text: localText(
+          "如果请求涉及账号、权限或支付操作，先提醒用户核对影响范围。",
+          "For account, permission, or billing actions, remind the user to verify the impact scope first.",
+        ),
+      },
+    ],
+    null,
+    2,
+  ),
+);
+
+function fillRequestPromptPresetTemplate() {
+  form.request_prompt_presets_json = requestPromptPresetTemplate.value;
+}
+
+async function copyRequestPromptPresetTemplate() {
+  await copyToClipboard(
+    requestPromptPresetTemplate.value,
+    localText("配置模板已复制到剪贴板", "Preset template copied to clipboard"),
+  );
+}
+
 const loading = ref(true);
 const loadFailed = ref(false);
 const saving = ref(false);
@@ -5507,6 +5667,8 @@ const form = reactive<SettingsForm>({
   // Identity patch (Claude -> Gemini)
   enable_identity_patch: true,
   identity_patch_prompt: "",
+  enable_request_prompt_presets: false,
+  request_prompt_presets_json: "",
   // Ops monitoring (vNext)
   ops_monitoring_enabled: true,
   ops_realtime_monitoring_enabled: true,
@@ -6293,6 +6455,28 @@ async function saveSettings() {
     // Optional URL fields: auto-clear invalid values so they don't cause backend 400 errors
     if (!isValidHttpUrl(form.frontend_url)) form.frontend_url = "";
     if (!isValidHttpUrl(form.doc_url)) form.doc_url = "";
+
+    const requestPromptPresetsRaw = form.request_prompt_presets_json.trim();
+    if (requestPromptPresetsRaw) {
+      try {
+        form.request_prompt_presets_json = JSON.stringify(
+          JSON.parse(requestPromptPresetsRaw),
+          null,
+          2,
+        );
+      } catch {
+        appStore.showError(
+          localText(
+            "请求预设提示词 JSON 格式无效，请检查后再保存。",
+            "Request prompt presets JSON is invalid. Fix it before saving.",
+          ),
+        );
+        return;
+      }
+    } else {
+      form.request_prompt_presets_json = "";
+    }
+
     syncWeChatConnectMode();
     const wechatStoredMode = deriveWeChatConnectStoredMode(
       form.wechat_connect_open_enabled,
@@ -6410,6 +6594,8 @@ async function saveSettings() {
       fallback_model_antigravity: form.fallback_model_antigravity,
       enable_identity_patch: form.enable_identity_patch,
       identity_patch_prompt: form.identity_patch_prompt,
+      enable_request_prompt_presets: form.enable_request_prompt_presets,
+      request_prompt_presets_json: form.request_prompt_presets_json,
       min_claude_code_version: form.min_claude_code_version,
       max_claude_code_version: form.max_claude_code_version,
       allow_ungrouped_key_scheduling: form.allow_ungrouped_key_scheduling,

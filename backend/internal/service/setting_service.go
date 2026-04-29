@@ -1210,6 +1210,12 @@ func (s *SettingService) buildSystemSettingsUpdates(ctx context.Context, setting
 	// Identity patch configuration (Claude -> Gemini)
 	updates[SettingKeyEnableIdentityPatch] = strconv.FormatBool(settings.EnableIdentityPatch)
 	updates[SettingKeyIdentityPatchPrompt] = settings.IdentityPatchPrompt
+	updates[SettingKeyEnableRequestPromptPresets] = strconv.FormatBool(settings.EnableRequestPromptPresets)
+	formattedPromptPresets, _, err := marshalRequestPromptPresetRules(settings.RequestPromptPresetsJSON)
+	if err != nil {
+		return nil, err
+	}
+	updates[SettingKeyRequestPromptPresetsJSON] = formattedPromptPresets
 
 	// Ops monitoring (vNext)
 	updates[SettingKeyOpsMonitoringEnabled] = strconv.FormatBool(settings.OpsMonitoringEnabled)
@@ -1309,6 +1315,16 @@ func (s *SettingService) refreshCachedSettings(settings *SystemSettings) {
 		metadataPassthrough:    settings.EnableMetadataPassthrough,
 		cchSigning:             settings.EnableCCHSigning,
 		expiresAt:              time.Now().Add(gatewayForwardingCacheTTL).UnixNano(),
+	})
+	requestPromptPresetSF.Forget("request_prompt_presets")
+	requestPromptPresetRules, err := parseRequestPromptPresetRules(settings.RequestPromptPresetsJSON)
+	if err != nil {
+		requestPromptPresetRules = nil
+	}
+	requestPromptPresetCache.Store(&cachedRequestPromptPresets{
+		enabled:   settings.EnableRequestPromptPresets && err == nil,
+		rules:     cloneRequestPromptPresetRules(requestPromptPresetRules),
+		expiresAt: time.Now().Add(requestPromptPresetCacheTTL).UnixNano(),
 	})
 	openAIAdvancedSchedulerSettingSF.Forget(openAIAdvancedSchedulerSettingKey)
 	openAIAdvancedSchedulerSettingCache.Store(&cachedOpenAIAdvancedSchedulerSetting{
@@ -1856,8 +1872,10 @@ func (s *SettingService) InitializeDefaultSettings(ctx context.Context) error {
 		SettingKeyFallbackModelGemini:      "gemini-2.5-pro",
 		SettingKeyFallbackModelAntigravity: "gemini-2.5-pro",
 		// Identity patch defaults
-		SettingKeyEnableIdentityPatch: "true",
-		SettingKeyIdentityPatchPrompt: "",
+		SettingKeyEnableIdentityPatch:        "true",
+		SettingKeyIdentityPatchPrompt:        "",
+		SettingKeyEnableRequestPromptPresets: "false",
+		SettingKeyRequestPromptPresetsJSON:   "",
 
 		// Ops monitoring defaults (vNext)
 		SettingKeyOpsMonitoringEnabled:         "true",
@@ -2183,6 +2201,8 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 		result.EnableIdentityPatch = true
 	}
 	result.IdentityPatchPrompt = settings[SettingKeyIdentityPatchPrompt]
+	result.EnableRequestPromptPresets = settings[SettingKeyEnableRequestPromptPresets] == "true"
+	result.RequestPromptPresetsJSON = settings[SettingKeyRequestPromptPresetsJSON]
 
 	// Ops monitoring settings (default: enabled, fail-open)
 	result.OpsMonitoringEnabled = !isFalseSettingValue(settings[SettingKeyOpsMonitoringEnabled])

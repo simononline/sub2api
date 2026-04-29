@@ -64,6 +64,11 @@ func (s *OpenAIGatewayService) ForwardAsAnthropic(
 	billingModel := resolveOpenAIForwardModel(account, normalizedModel, defaultMappedModel)
 	upstreamModel := normalizeOpenAIModelForUpstream(account, billingModel)
 	responsesReq.Model = upstreamModel
+	if s.settingService != nil {
+		if preset := s.settingService.BuildRequestPromptPresetText(ctx, PlatformOpenAI, originalModel); preset != "" {
+			responsesReq.Instructions = prependRequestPromptText(responsesReq.Instructions, preset)
+		}
+	}
 
 	logger.L().Debug("openai messages: model mapping applied",
 		zap.Int64("account_id", account.ID),

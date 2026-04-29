@@ -97,6 +97,12 @@ func (s *OpenAIGatewayService) ForwardAsChatCompletions(
 		if err != nil {
 			return nil, fmt.Errorf("rewrite model in responses-shape body: %w", err)
 		}
+		if s.settingService != nil {
+			responsesBody, _, err = s.settingService.ApplyRequestPromptPresetsToOpenAIBody(ctx, responsesBody, originalModel)
+			if err != nil {
+				return nil, fmt.Errorf("apply request prompt presets: %w", err)
+			}
+		}
 		// Strip Responses API parameters that no Codex upstream accepts.
 		// Because this branch forwards the raw body (the normal path rebuilds
 		// it from ChatCompletionsRequest and drops unknown fields naturally),
@@ -128,6 +134,11 @@ func (s *OpenAIGatewayService) ForwardAsChatCompletions(
 			return nil, fmt.Errorf("convert chat completions to responses: %w", err)
 		}
 		responsesReq.Model = upstreamModel
+		if s.settingService != nil {
+			if preset := s.settingService.BuildRequestPromptPresetText(ctx, PlatformOpenAI, originalModel); preset != "" {
+				responsesReq.Instructions = prependRequestPromptText(responsesReq.Instructions, preset)
+			}
+		}
 		normalizeResponsesRequestServiceTier(responsesReq)
 		responsesBody, err = json.Marshal(responsesReq)
 		if err != nil {
