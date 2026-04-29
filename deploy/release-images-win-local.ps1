@@ -59,8 +59,16 @@ function Invoke-Checked {
         [string[]]$Arguments
     )
 
-    & $File @Arguments
-    if ($LASTEXITCODE -ne 0) {
+    $oldErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        & $File @Arguments
+        $exitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $oldErrorActionPreference
+    }
+
+    if ($exitCode -ne 0) {
         Die "command failed: $File $($Arguments -join ' ')"
     }
 }
@@ -349,8 +357,8 @@ function Test-Enabled {
 function Test-ImageExists {
     param([string]$Image)
 
-    & docker image inspect $Image *> $null
-    return ($LASTEXITCODE -eq 0)
+    $imageId = & docker images --quiet $Image 2>$null | Select-Object -First 1
+    return (-not [string]::IsNullOrWhiteSpace(($imageId -as [string])))
 }
 
 function Get-ImagePlatform {
@@ -371,6 +379,36 @@ function Test-ImageMatchesPlatform {
 
     $actual = Get-ImagePlatform $Image
     return ($actual -eq $Platform -or $actual.StartsWith("$Platform/"))
+}
+
+function Get-BuildDockerfile {
+    param(
+        [string]$Dockerfile,
+        [string]$Label
+    )
+
+    $skipSyntax = Get-EnvValue "SKIP_DOCKERFILE_SYNTAX" "1"
+    if (-not (Test-Enabled $skipSyntax "SKIP_DOCKERFILE_SYNTAX")) {
+        return $Dockerfile
+    }
+
+    $firstLine = [System.IO.File]::ReadLines($Dockerfile) | Select-Object -First 1
+    if ($firstLine -notmatch '^\s*#\s*syntax=') {
+        return $Dockerfile
+    }
+
+    $buildDir = Join-Path $RuntimeDir "build"
+    New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
+
+    $fallbackDockerfile = Join-Path $buildDir ("$([System.IO.Path]::GetFileName($Dockerfile)).nosyntax")
+    $lines = [System.IO.File]::ReadAllLines($Dockerfile)
+    if ($lines.Length -le 1) {
+        return $Dockerfile
+    }
+
+    Write-LinesUtf8NoBom $fallbackDockerfile $lines[1..($lines.Length - 1)]
+    Log "using $Label Dockerfile without syntax directive: $fallbackDockerfile"
+    return $fallbackDockerfile
 }
 
 function Ensure-BaseImageOnce {
@@ -410,7 +448,8 @@ function Rebuild-Image {
         $env:DOCKER_BUILDKIT = "1"
     }
 
-    $arguments = @("build", "--platform", $Platform, "-f", $Dockerfile, "-t", $Image) + $BuildArgs + @($RootDir)
+    $buildDockerfile = Get-BuildDockerfile $Dockerfile $Label
+    $arguments = @("build", "--platform", $Platform, "-f", $buildDockerfile, "-t", $Image) + $BuildArgs + @($RootDir)
     Invoke-Checked docker $arguments
 }
 
@@ -788,8 +827,14 @@ function Invoke-SshRemote {
     $askPassState = Enable-AskPass
 
     try {
-        $output = & ssh @sshArgs 2>&1
-        $exitCode = $LASTEXITCODE
+        $oldErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
+        try {
+            $output = @(& ssh @sshArgs 2>&1 | ForEach-Object { [string]$_ })
+            $exitCode = $LASTEXITCODE
+        } finally {
+            $ErrorActionPreference = $oldErrorActionPreference
+        }
     } finally {
         Disable-AskPass $askPassState
     }
@@ -988,6 +1033,7 @@ function Show-Usage {
     @"
 Usage:
   .\deploy\$ScriptName up       Build images, open the SSH DB tunnel, and start local Docker services
+  .\deploy\$ScriptName deploy   Same as up; Windows-friendly alias for local release
   .\deploy\$ScriptName build    Build backend/frontend and prepare the local Redis image
   .\deploy\$ScriptName tunnel   Open only the SSH tunnel to the remote PostgreSQL service
   .\deploy\$ScriptName down     Stop local Docker services
@@ -997,8 +1043,8 @@ Usage:
   .\deploy\$ScriptName config   Render the generated compose config
 
 PowerShell password examples:
-  .\deploy\$ScriptName up -RemotePassword '<ssh-password>'
-  try { `$env:REMOTE_PASSWORD='<ssh-password>'; .\deploy\$ScriptName up } finally { Remove-Item Env:REMOTE_PASSWORD -ErrorAction SilentlyContinue }
+  .\deploy\$ScriptName deploy -RemotePassword '<ssh-password>'
+  try { `$env:REMOTE_PASSWORD='<ssh-password>'; .\deploy\$ScriptName deploy } finally { Remove-Item Env:REMOTE_PASSWORD -ErrorAction SilentlyContinue }
 
 SSH proxy examples:
   `$env:SSH_PROXY_URL='socks5://127.0.0.1:7890'; .\deploy\$ScriptName up -RemotePassword '<ssh-password>'
@@ -1010,6 +1056,7 @@ Default services:
   backend   $BackendImage
   redis     $RedisImage
   database  host container -> $AppDatabaseHost`:$AppDatabasePort -> ssh tunnel -> $RemoteHost`:$RemoteDatabasePort
+  postgres  not started locally by this script
 
 Common environment overrides:
   TAG=$Tag
@@ -1026,6 +1073,7 @@ Common environment overrides:
   SSH_OPTS=$($SshOptions -join ' ')
   SSH_PROXY_URL=socks5://127.0.0.1:7890
   START_TUNNEL=1|0
+  SKIP_DOCKERFILE_SYNTAX=1|0
 "@
 }
 
@@ -1080,6 +1128,14 @@ $TimeZone = Get-EnvValue "TZ" "Asia/Shanghai"
 
 switch ($Action.ToLowerInvariant()) {
     "up" {
+        Start-Tunnel
+        Build-Images
+        Write-RuntimeFiles
+        Invoke-Compose @("up", "-d", "--remove-orphans")
+        Invoke-Compose @("ps")
+        Open-UrlHint
+    }
+    "deploy" {
         Start-Tunnel
         Build-Images
         Write-RuntimeFiles
