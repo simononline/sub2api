@@ -1102,7 +1102,7 @@ export default {
     description: '查看用户消费排行榜',
     descriptionMasked: '当前账号以普通用户身份查看，榜单账号已打码，仅展示排行、消费、请求数与 Token 汇总。',
     descriptionAdmin: '当前账号以管理员身份查看，榜单展示真实用户账号与完整排行数据。',
-    badge: 'Usage Leaderboard',
+    badge: '使用排行榜',
     startDate: '开始日期',
     endDate: '结束日期',
     limit: '数量',
