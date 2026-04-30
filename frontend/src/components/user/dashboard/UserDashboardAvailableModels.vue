@@ -1,5 +1,5 @@
 <template>
-  <div class="card overflow-hidden">
+  <div :class="containerClass">
     <div class="flex flex-col gap-3 border-b border-gray-100 px-6 py-4 dark:border-dark-700 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex items-center gap-3">
         <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-sky-100 dark:bg-sky-900/30">
@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <div class="p-5">
+    <div class="min-h-0 flex-1 p-5">
       <div v-if="loading" class="flex flex-wrap gap-2">
         <span v-for="idx in 8" :key="idx" class="h-8 w-28 animate-pulse rounded-full bg-gray-100 dark:bg-dark-800" />
       </div>
@@ -54,15 +54,15 @@
       </div>
 
       <div v-else>
-        <div class="max-h-40 overflow-y-auto pr-1">
-          <div class="flex flex-wrap gap-2">
+        <div class="min-h-0 max-h-40 overflow-y-auto overscroll-contain pr-1">
+          <div class="flex min-w-0 flex-wrap gap-2">
             <span
               v-for="model in models"
               :key="model.id"
-              class="inline-flex max-w-full items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 font-mono text-xs font-medium text-gray-700 dark:border-dark-700 dark:bg-dark-800/60 dark:text-dark-100"
+              class="inline-flex min-w-0 max-w-full items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 font-mono text-xs font-medium text-gray-700 dark:border-dark-700 dark:bg-dark-800/60 dark:text-dark-100"
               :title="model.display_name && model.display_name !== model.id ? `${model.display_name} (${model.id})` : model.id"
             >
-              <span class="max-w-[260px] truncate">{{ model.id }}</span>
+              <span class="min-w-0 max-w-[18rem] truncate">{{ model.id }}</span>
             </span>
           </div>
         </div>
@@ -80,20 +80,30 @@ import { useI18n } from 'vue-i18n'
 import Icon from '@/components/icons/Icon.vue'
 import type { GatewayModel } from '@/api/models'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   models: GatewayModel[]
   loading: boolean
   error: boolean
   activeKeyCount: number
   queriedKeyCount: number
   failedKeyCount: number
-}>()
+  embedded?: boolean
+}>(), {
+  embedded: false
+})
 
 defineEmits<{
   (e: 'refresh'): void
 }>()
 
 const { t } = useI18n()
+
+const containerClass = computed(() => [
+  'flex min-h-0 flex-col overflow-hidden',
+  props.embedded
+    ? 'h-full'
+    : 'card'
+])
 
 const summaryText = computed(() => {
   if (props.loading) {

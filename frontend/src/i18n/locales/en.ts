@@ -6010,6 +6010,18 @@ export default {
   userSubscriptions: {
     title: 'My Subscriptions',
     description: 'View your subscription plans and usage',
+    purchasePackageTitle: 'Buy a package now',
+    purchasePackageDesc: 'Get an activation code after payment and use it immediately.',
+    purchasePackageButton: 'Buy now',
+    contactTitle: 'Contact',
+    contactDesc: 'Join the group for support and package details.',
+    contactGroup: 'Group',
+    contactQuestion: 'Question',
+    contactQuestionText: 'Please enter the group join key',
+    contactAnswer: 'Answer',
+    configGuideTitle: 'Codex Quick Start',
+    configGuideDesc: 'Follow the step-by-step guide to configure your environment and start using AI-assisted coding in minutes.',
+    configGuideButton: 'View setup guide',
     noActiveSubscriptions: 'No Active Subscriptions',
     noActiveSubscriptionsDesc:
       "You don't have any active subscriptions. Contact administrator to get one.",
