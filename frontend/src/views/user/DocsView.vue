@@ -113,6 +113,16 @@
           <p>
             最后：目前暂时不支持 Claude，因为我自己主要使用 OpenAI 系，也会优先把<span class="rounded bg-sky-50 px-1.5 py-0.5 font-semibold text-sky-800 dark:bg-sky-500/15 dark:text-sky-100">OpenAI 号池</span>维护稳定。但如果以后想用 Claude 的小伙伴多起来了，我也会认真去找渠道、测稳定性、算成本，想办法让大家也能稳稳地用上。总归一句话：能<span class="underline decoration-wavy decoration-amber-400 underline-offset-4 dark:decoration-amber-300">便宜一点、稳定一点</span>，就值得继续折腾。
           </p>
+          <figure class="space-y-3">
+            <img
+              src="/docs/pro-pool.png"
+              alt="现在的Pro号池"
+              class="w-full rounded-lg border border-gray-200 bg-white object-contain shadow-sm dark:border-dark-700 dark:bg-dark-950"
+            >
+            <figcaption class="text-center text-sm font-semibold text-gray-600 dark:text-dark-300">
+              现在的Pro号池
+            </figcaption>
+          </figure>
         </div>
       </section>
 
