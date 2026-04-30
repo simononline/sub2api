@@ -591,6 +591,21 @@ const OrderListIcon = {
     )
 }
 
+const HelpGuideIcon = {
+  render: () =>
+    h(
+      'svg',
+      { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': '1.5' },
+      [
+        h('path', {
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          d: 'M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25'
+        })
+      ]
+    )
+}
+
 const ChevronDoubleRightIcon = {
   render: () =>
     h(
@@ -669,7 +684,7 @@ const flagAdminPayment = () => adminSettingsStore.paymentEnabled
 // buildSelfNavItems 构造用户自己的导航项（用户端主菜单和管理员的"我的账户"子菜单共享这组声明）。
 // withDashboard=true 时包含仪表盘（用户端），false 时不含（管理员的个人区已经有独立仪表盘入口）。
 //
-// 条目顺序：订阅 → 我的用量 → 密钥 → 用量 → 排行榜 → 渠道状态 → 支付 → 资料。
+// 条目顺序：订阅 → 我的用量 → 密钥 → 用量 → 排行榜 → 渠道状态 → 支付 → 资料 → 自定义菜单 → 帮助指南。
 // 管理员个人区额外展示可用渠道，并紧挨渠道状态之上。
 function buildSelfNavItems(withDashboard: boolean, includeAvailableChannels = false): NavItem[] {
   const items: NavItem[] = [
@@ -699,6 +714,7 @@ function buildSelfNavItems(withDashboard: boolean, includeAvailableChannels = fa
       iconSvg: item.icon_svg,
     })),
   )
+  items.push({ path: '/docs', label: t('nav.helpGuide'), icon: HelpGuideIcon })
   return items
 }
 

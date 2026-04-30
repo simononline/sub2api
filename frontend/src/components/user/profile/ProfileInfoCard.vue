@@ -186,6 +186,7 @@ import ProfileAvatarCard from '@/components/user/profile/ProfileAvatarCard.vue'
 import ProfileEditForm from '@/components/user/profile/ProfileEditForm.vue'
 import ProfileIdentityBindingsSection from '@/components/user/profile/ProfileIdentityBindingsSection.vue'
 import type { User, UserAuthBindingStatus, UserAuthProvider, UserProfileSourceContext } from '@/types'
+import { sanitizeUrl } from '@/utils/url'
 
 const props = withDefaults(defineProps<{
   user: User | null
@@ -229,7 +230,7 @@ function isEmailBound(user: User | null | undefined): boolean {
   return normalized ?? false
 }
 
-const avatarUrl = computed(() => props.user?.avatar_url?.trim() || '')
+const avatarUrl = computed(() => sanitizeUrl(props.user?.avatar_url || ''))
 const displayName = computed(() => props.user?.username?.trim() || props.user?.email?.trim() || t('profile.user'))
 const primaryEmailDisplay = computed(() => {
   const email = props.user?.email?.trim() || ''

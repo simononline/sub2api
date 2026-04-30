@@ -746,6 +746,7 @@ import { useAuthStore, useAppStore } from '@/stores'
 import AnnouncementBell from '@/components/common/AnnouncementBell.vue'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Icon from '@/components/icons/Icon.vue'
+import { sanitizeUrl } from '@/utils/url'
 // import  { type PublicSupportedModel } from '@/api/channels'
 // import { getModelsByPlatform } from '@/composables/useModelWhitelist'
 
@@ -998,7 +999,7 @@ const consoleEntryPath = computed(() =>
   isAuthenticated.value ? (isAdmin.value ? '/admin/dashboard' : '/subscriptions') : '/login'
 )
 const plansEntryPath = computed(() => isAuthenticated.value ? '/purchase' : '/login')
-const avatarUrl = computed(() => user.value?.avatar_url?.trim() || '')
+const avatarUrl = computed(() => sanitizeUrl(user.value?.avatar_url || ''))
 const userInitials = computed(() => {
   if (!user.value) return ''
   if (user.value.username) {

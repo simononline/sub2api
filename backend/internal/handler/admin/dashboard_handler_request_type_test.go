@@ -68,6 +68,10 @@ func (s *dashboardUsageRepoCapture) GetUserSpendingRanking(
 }
 
 func newDashboardRequestTypeTestRouter(repo *dashboardUsageRepoCapture) *gin.Engine {
+	return newDashboardRequestTypeTestRouterWithViewer(repo, 99)
+}
+
+func newDashboardRequestTypeTestRouterWithViewer(repo *dashboardUsageRepoCapture, viewerUserID int64) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	dashboardSvc := service.NewDashboardService(repo, nil, nil, nil)
 	handler := NewDashboardHandler(dashboardSvc, nil)
@@ -76,10 +80,12 @@ func newDashboardRequestTypeTestRouter(repo *dashboardUsageRepoCapture) *gin.Eng
 	router.GET("/admin/dashboard/models", handler.GetModelStats)
 	router.GET("/admin/dashboard/users-ranking", handler.GetUserSpendingRanking)
 	router.GET("/usage/dashboard/users-ranking", func(c *gin.Context) {
+		c.Set(string(middleware.ContextKeyUser), middleware.AuthSubject{UserID: viewerUserID})
 		c.Set(string(middleware.ContextKeyUserRole), service.RoleUser)
 		handler.GetViewerUserSpendingRanking(c)
 	})
 	router.GET("/usage/dashboard/users-ranking-admin", func(c *gin.Context) {
+		c.Set(string(middleware.ContextKeyUser), middleware.AuthSubject{UserID: viewerUserID})
 		c.Set(string(middleware.ContextKeyUserRole), service.RoleAdmin)
 		handler.GetViewerUserSpendingRanking(c)
 	})
@@ -225,7 +231,7 @@ func TestDashboardViewerUsersRankingMasksRegularUsersOnly(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, rec.Code)
 	require.Contains(t, rec.Body.String(), "\"masked_accounts\":true")
-	require.Contains(t, rec.Body.String(), "a***a@e***e.com")
+	require.Contains(t, rec.Body.String(), "al****ha@e***e.com")
 	require.NotContains(t, rec.Body.String(), "alpha@example.com")
 	require.NotContains(t, rec.Body.String(), "\"user_id\":7")
 
@@ -237,4 +243,34 @@ func TestDashboardViewerUsersRankingMasksRegularUsersOnly(t *testing.T) {
 	require.Contains(t, adminRec.Body.String(), "\"masked_accounts\":false")
 	require.Contains(t, adminRec.Body.String(), "alpha@example.com")
 	require.Contains(t, adminRec.Body.String(), "\"user_id\":7")
+}
+
+func TestMaskLeaderboardAccountShortDomain(t *testing.T) {
+	require.Equal(t, "hu****qs@***.com", maskLeaderboardAccount("huangqs@qq.com"))
+	require.Equal(t, "al****ha@e***e.com", maskLeaderboardAccount("alpha@example.com"))
+	require.Equal(t, "x***@***.com", maskLeaderboardAccount("x@qq.com"))
+}
+
+func TestDashboardViewerUsersRankingKeepsCurrentUserVisible(t *testing.T) {
+	dashboardUsersRankingCache = newSnapshotCache(5 * time.Minute)
+	repo := &dashboardUsageRepoCapture{
+		ranking: []usagestats.UserSpendingRankingItem{
+			{UserID: 7, Email: "huangqs@qq.com", ActualCost: 10.5, Requests: 3, Tokens: 300},
+			{UserID: 8, Email: "other@qq.com", ActualCost: 9.5, Requests: 2, Tokens: 200},
+		},
+		rankingTotal: 20,
+	}
+	router := newDashboardRequestTypeTestRouterWithViewer(repo, 7)
+
+	req := httptest.NewRequest(http.MethodGet, "/usage/dashboard/users-ranking?start_date=2025-01-01&end_date=2025-01-02", nil)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	require.Contains(t, rec.Body.String(), "\"masked_accounts\":true")
+	require.Contains(t, rec.Body.String(), "huangqs@qq.com")
+	require.Contains(t, rec.Body.String(), "\"user_id\":7")
+	require.Contains(t, rec.Body.String(), "ot****er@***.com")
+	require.NotContains(t, rec.Body.String(), "other@qq.com")
+	require.NotContains(t, rec.Body.String(), "\"user_id\":8")
 }

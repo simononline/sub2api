@@ -3,14 +3,8 @@
 package service
 
 import (
-	"bytes"
 	"context"
-	"crypto/sha256"
-	"encoding/base64"
-	"encoding/hex"
 	"errors"
-	"image"
-	"image/png"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -653,94 +647,13 @@ func TestNewUserService_FieldsAssignment(t *testing.T) {
 	require.Equal(t, cache, svc.billingCache)
 }
 
-func TestUpdateProfile_StoresInlineAvatarWithinLimit(t *testing.T) {
-	raw := []byte("small-avatar")
-	dataURL := "data:image/png;base64," + base64.StdEncoding.EncodeToString(raw)
-	expectedSum := sha256.Sum256(raw)
-	repo := &mockUserRepo{
-		getByIDUser: &User{
-			ID:       7,
-			Email:    "avatar@example.com",
-			Username: "avatar-user",
-		},
-	}
-	svc := NewUserService(repo, nil, nil, nil)
-
-	updated, err := svc.UpdateProfile(context.Background(), 7, UpdateProfileRequest{
-		AvatarURL: &dataURL,
-	})
-	require.NoError(t, err)
-	require.Len(t, repo.upsertAvatarArgs, 1)
-	require.Equal(t, "inline", repo.upsertAvatarArgs[0].StorageProvider)
-	require.Equal(t, "image/png", repo.upsertAvatarArgs[0].ContentType)
-	require.Equal(t, len(raw), repo.upsertAvatarArgs[0].ByteSize)
-	require.Equal(t, hex.EncodeToString(expectedSum[:]), repo.upsertAvatarArgs[0].SHA256)
-	require.Equal(t, dataURL, updated.AvatarURL)
-	require.Equal(t, "inline", updated.AvatarSource)
-	require.Equal(t, "image/png", updated.AvatarMIME)
-	require.Equal(t, len(raw), updated.AvatarByteSize)
-	require.Equal(t, hex.EncodeToString(expectedSum[:]), updated.AvatarSHA256)
-}
-
-func TestUpdateProfile_CompressesInlineAvatarToTwentyKilobytes(t *testing.T) {
-	var encoded bytes.Buffer
-	for _, size := range []int{192, 224, 256, 288} {
-		encoded.Reset()
-		var img image.RGBA
-		img.Rect = image.Rect(0, 0, size, size)
-		img.Stride = size * 4
-		img.Pix = make([]byte, size*size*4)
-		for y := 0; y < size; y++ {
-			for x := 0; x < size; x++ {
-				offset := y*img.Stride + x*4
-				img.Pix[offset] = uint8((x*x + y*17) % 255)
-				img.Pix[offset+1] = uint8((y*y + x*29) % 255)
-				img.Pix[offset+2] = uint8(((x * y) + x*13 + y*7) % 255)
-				img.Pix[offset+3] = 0xff
-			}
-		}
-		require.NoError(t, png.Encode(&encoded, &img))
-		if encoded.Len() > 20*1024 && encoded.Len() <= maxInlineAvatarBytes {
-			break
-		}
-	}
-	require.Greater(t, encoded.Len(), 20*1024)
-	require.LessOrEqual(t, encoded.Len(), maxInlineAvatarBytes)
-
-	dataURL := "data:image/png;base64," + base64.StdEncoding.EncodeToString(encoded.Bytes())
-	repo := &mockUserRepo{
-		getByIDUser: &User{
-			ID:       17,
-			Email:    "avatar-compress@example.com",
-			Username: "avatar-compress",
-		},
-	}
-	svc := NewUserService(repo, nil, nil, nil)
-
-	updated, err := svc.UpdateProfile(context.Background(), 17, UpdateProfileRequest{
-		AvatarURL: &dataURL,
-	})
-	require.NoError(t, err)
-	require.Len(t, repo.upsertAvatarArgs, 1)
-	require.Equal(t, "inline", repo.upsertAvatarArgs[0].StorageProvider)
-	require.LessOrEqual(t, repo.upsertAvatarArgs[0].ByteSize, 20*1024)
-	require.Equal(t, "image/jpeg", repo.upsertAvatarArgs[0].ContentType)
-	require.Contains(t, repo.upsertAvatarArgs[0].URL, "data:image/jpeg;base64,")
-	require.Equal(t, "inline", updated.AvatarSource)
-	require.Equal(t, "image/jpeg", updated.AvatarMIME)
-	require.LessOrEqual(t, updated.AvatarByteSize, 20*1024)
-	require.Contains(t, updated.AvatarURL, "data:image/jpeg;base64,")
-	require.NotEmpty(t, updated.AvatarSHA256)
-}
-
-func TestUpdateProfile_RejectsInlineAvatarOverLimit(t *testing.T) {
-	raw := make([]byte, maxInlineAvatarBytes+1)
-	dataURL := "data:image/png;base64," + base64.StdEncoding.EncodeToString(raw)
+func TestUpdateProfile_RejectsInlineAvatarDataURL(t *testing.T) {
+	dataURL := "data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+PC9zdmc+"
 	repo := &mockUserRepo{
 		getByIDUser: &User{
 			ID:       8,
-			Email:    "large-avatar@example.com",
-			Username: "too-large",
+			Email:    "inline-avatar@example.com",
+			Username: "inline-avatar",
 		},
 	}
 	svc := NewUserService(repo, nil, nil, nil)
@@ -748,7 +661,7 @@ func TestUpdateProfile_RejectsInlineAvatarOverLimit(t *testing.T) {
 	_, err := svc.UpdateProfile(context.Background(), 8, UpdateProfileRequest{
 		AvatarURL: &dataURL,
 	})
-	require.ErrorIs(t, err, ErrAvatarTooLarge)
+	require.ErrorIs(t, err, ErrAvatarInvalid)
 	require.Empty(t, repo.upsertAvatarArgs)
 	require.Empty(t, repo.deleteAvatarIDs)
 	require.Zero(t, repo.updateCalls)

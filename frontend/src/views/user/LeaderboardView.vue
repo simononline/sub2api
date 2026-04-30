@@ -192,7 +192,12 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-dark-800">
-                <tr v-for="(item, index) in rows" :key="`${index}-${item.email}`" class="transition-colors hover:bg-gray-50 dark:hover:bg-dark-800/50">
+                <tr
+                  v-for="(item, index) in rows"
+                  :key="`${index}-${item.email}`"
+                  class="transition-colors"
+                  :class="isCurrentUserRow(item) ? 'bg-primary-50/80 hover:bg-primary-50 dark:bg-primary-500/10 dark:hover:bg-primary-500/15' : 'hover:bg-gray-50 dark:hover:bg-dark-800/50'"
+                >
                   <td class="py-4 pl-4 pr-1">
                     <span :class="rankBadgeClass(index)">
                       #{{ index + 1 }}
@@ -200,11 +205,17 @@
                   </td>
                   <td class="py-4 pl-1 pr-3">
                     <div class="flex min-w-0 items-center gap-3">
-                      <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 dark:border-dark-700 dark:bg-dark-950 dark:text-dark-100">
+                      <div
+                        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border text-sm font-semibold"
+                        :class="isCurrentUserRow(item) ? 'border-primary-300 bg-primary-100 text-primary-700 dark:border-primary-500/50 dark:bg-primary-500/15 dark:text-primary-300' : 'border-gray-200 bg-gray-50 text-gray-700 dark:border-dark-700 dark:bg-dark-950 dark:text-dark-100'"
+                      >
                         {{ accountInitial(item.email) }}
                       </div>
                       <div class="min-w-0">
-                        <div class="truncate font-medium text-gray-950 dark:text-dark-50">
+                        <div
+                          class="truncate font-medium"
+                          :class="isCurrentUserRow(item) ? 'text-primary-700 dark:text-primary-300' : 'text-gray-950 dark:text-dark-50'"
+                        >
                           {{ item.email || '-' }}
                         </div>
                         <div v-if="!isMasked" class="mt-0.5 text-xs text-gray-500 dark:text-dark-400">
@@ -234,12 +245,16 @@
             <div
               v-for="(item, index) in rows"
               :key="`mobile-${index}-${item.email}`"
-              class="rounded-lg border border-gray-200 bg-white p-4 dark:border-dark-700 dark:bg-dark-900"
+              class="rounded-lg border p-4"
+              :class="isCurrentUserRow(item) ? 'border-primary-200 bg-primary-50/80 dark:border-primary-500/40 dark:bg-primary-500/10' : 'border-gray-200 bg-white dark:border-dark-700 dark:bg-dark-900'"
             >
               <div class="mb-4 flex items-start justify-between gap-3">
                 <div class="min-w-0">
                   <span :class="rankBadgeClass(index)">#{{ index + 1 }}</span>
-                  <div class="mt-3 truncate font-medium text-gray-950 dark:text-dark-50">
+                  <div
+                    class="mt-3 truncate font-medium"
+                    :class="isCurrentUserRow(item) ? 'text-primary-700 dark:text-primary-300' : 'text-gray-950 dark:text-dark-50'"
+                  >
                     {{ item.email || '-' }}
                   </div>
                 </div>
@@ -326,6 +341,7 @@ const rows = computed<UserSpendingRankingItem[]>(() => ranking.value?.ranking ||
 const isMasked = computed(() => ranking.value?.masked_accounts ?? !authStore.isAdmin)
 const viewerHint = computed(() => isMasked.value ? t('leaderboard.descriptionMasked') : t('leaderboard.descriptionAdmin'))
 const user = computed(() => authStore.user)
+const currentUserId = computed(() => user.value?.id ?? 0)
 const userBalance = computed(() => user.value?.balance ?? 0)
 const activeSubscriptions = computed(() => subscriptionStore.activeSubscriptions.filter((subscription) => subscription.status === 'active'))
 const hasActiveSubscriptions = computed(() => activeSubscriptions.value.length > 0)
@@ -405,6 +421,10 @@ function rankBadgeClass(index: number): string {
 function progressWidth(cost: number): string {
   if (maxCost.value <= 0 || cost <= 0) return '0%'
   return `${Math.max(8, Math.round((cost / maxCost.value) * 100))}%`
+}
+
+function isCurrentUserRow(item: UserSpendingRankingItem): boolean {
+  return currentUserId.value > 0 && item.user_id === currentUserId.value
 }
 
 function compareSubscriptionExpiry(a: UserSubscription, b: UserSubscription): number {

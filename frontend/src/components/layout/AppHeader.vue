@@ -27,16 +27,17 @@
         <AnnouncementBell v-if="user" />
 
         <!-- Docs Link -->
-        <a
-          v-if="docUrl"
-          :href="docUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white"
+        <router-link
+          to="/docs"
+          class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors"
+          :class="isDocsRoute
+            ? 'bg-primary-50 text-primary-700 ring-1 ring-primary-200 dark:bg-primary-950/30 dark:text-primary-200 dark:ring-primary-500/20'
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white'"
+          :aria-current="isDocsRoute ? 'page' : undefined"
         >
           <Icon name="book" size="sm" />
-          <span class="hidden sm:inline">{{ t('nav.docs') }}</span>
-        </a>
+          <span class="hidden sm:inline">帮助指南</span>
+        </router-link>
 
         <!-- Language Switcher -->
         <LocaleSwitcher />
@@ -235,6 +236,7 @@ import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import SubscriptionProgressMini from '@/components/common/SubscriptionProgressMini.vue'
 import AnnouncementBell from '@/components/common/AnnouncementBell.vue'
 import Icon from '@/components/icons/Icon.vue'
+import { sanitizeUrl } from '@/utils/url'
 
 const router = useRouter()
 const route = useRoute()
@@ -248,9 +250,9 @@ const user = computed(() => authStore.user)
 const dropdownOpen = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
 const contactInfo = computed(() => appStore.contactInfo)
-const docUrl = computed(() => appStore.docUrl)
-const avatarUrl = computed(() => user.value?.avatar_url?.trim() || '')
+const avatarUrl = computed(() => sanitizeUrl(user.value?.avatar_url || ''))
 const isDark = ref(document.documentElement.classList.contains('dark'))
+const isDocsRoute = computed(() => route.path === '/docs' || route.path.startsWith('/docs/'))
 const themeToggleLabel = computed(() => (
   isDark.value ? t('nav.lightMode') : t('nav.darkMode')
 ))

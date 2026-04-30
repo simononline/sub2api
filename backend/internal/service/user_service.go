@@ -1,21 +1,9 @@
 package service
 
 import (
-	"bytes"
 	"context"
-	"crypto/sha256"
 	"crypto/subtle"
-	"encoding/base64"
-	"encoding/hex"
 	"fmt"
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
-	"image"
-	"image/color"
-	stddraw "image/draw"
-	_ "image/gif"
-	"image/jpeg"
-	_ "image/png"
 	"log/slog"
 	"net/url"
 	"sort"
@@ -24,7 +12,8 @@ import (
 	"sync"
 	"time"
 
-	xdraw "golang.org/x/image/draw"
+	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -33,9 +22,7 @@ var (
 	ErrPasswordIncorrect        = infraerrors.BadRequest("PASSWORD_INCORRECT", "current password is incorrect")
 	ErrInsufficientPerms        = infraerrors.Forbidden("INSUFFICIENT_PERMISSIONS", "insufficient permissions")
 	ErrNotifyCodeUserRateLimit  = infraerrors.TooManyRequests("NOTIFY_CODE_USER_RATE_LIMIT", "too many verification codes requested, please try again later")
-	ErrAvatarInvalid            = infraerrors.BadRequest("AVATAR_INVALID", "avatar must be a valid image data URL or http(s) URL")
-	ErrAvatarTooLarge           = infraerrors.BadRequest("AVATAR_TOO_LARGE", "avatar image must be 100KB or smaller")
-	ErrAvatarNotImage           = infraerrors.BadRequest("AVATAR_NOT_IMAGE", "avatar content must be an image")
+	ErrAvatarInvalid            = infraerrors.BadRequest("AVATAR_INVALID", "avatar must be a valid http(s) URL")
 	ErrIdentityProviderInvalid  = infraerrors.BadRequest("IDENTITY_PROVIDER_INVALID", "identity provider is invalid")
 	ErrIdentityRedirectInvalid  = infraerrors.BadRequest("IDENTITY_REDIRECT_INVALID", "identity redirect path is invalid")
 	ErrIdentityUnbindLastMethod = infraerrors.Conflict(
@@ -45,9 +32,7 @@ var (
 )
 
 const (
-	maxNotifyEmails      = 3 // Maximum number of notification emails per user
-	maxInlineAvatarBytes = 100 * 1024
-	targetAvatarBytes    = 20 * 1024
+	maxNotifyEmails = 3 // Maximum number of notification emails per user
 
 	// User-level rate limiting for notify email verification codes
 	notifyCodeUserRateLimit  = 5
@@ -56,11 +41,6 @@ const (
 	defaultUserIdentityRedirect = "/settings/profile"
 	userLastActiveMinTouch      = 10 * time.Minute
 	userLastActiveFailBackoff   = 30 * time.Second
-)
-
-var (
-	avatarScaleSteps   = []float64{1, 0.92, 0.84, 0.76, 0.68, 0.6, 0.52, 0.44, 0.36}
-	avatarQualitySteps = []int{88, 80, 72, 64, 56, 48, 40, 32}
 )
 
 // UserListFilters contains all filter options for listing users
@@ -502,8 +482,8 @@ func normalizeUserAvatarInput(raw string) (UpsertUserAvatarInput, error) {
 	if raw == "" {
 		return UpsertUserAvatarInput{}, ErrAvatarInvalid
 	}
-	if strings.HasPrefix(raw, "data:") {
-		return normalizeInlineUserAvatarInput(raw)
+	if strings.HasPrefix(strings.ToLower(raw), "data:") {
+		return UpsertUserAvatarInput{}, ErrAvatarInvalid
 	}
 
 	parsed, err := url.Parse(raw)
@@ -526,81 +506,6 @@ func normalizeUserAvatarInput(raw string) (UpsertUserAvatarInput, error) {
 func ValidateUserAvatar(raw string) error {
 	_, err := normalizeUserAvatarInput(raw)
 	return err
-}
-
-func normalizeInlineUserAvatarInput(raw string) (UpsertUserAvatarInput, error) {
-	body := strings.TrimPrefix(raw, "data:")
-	meta, encoded, ok := strings.Cut(body, ",")
-	if !ok {
-		return UpsertUserAvatarInput{}, ErrAvatarInvalid
-	}
-	meta = strings.TrimSpace(meta)
-	encoded = strings.TrimSpace(encoded)
-	if !strings.HasSuffix(strings.ToLower(meta), ";base64") {
-		return UpsertUserAvatarInput{}, ErrAvatarInvalid
-	}
-
-	contentType := strings.TrimSpace(meta[:len(meta)-len(";base64")])
-	if contentType == "" || !strings.HasPrefix(strings.ToLower(contentType), "image/") {
-		return UpsertUserAvatarInput{}, ErrAvatarNotImage
-	}
-
-	decoded, err := base64.StdEncoding.DecodeString(encoded)
-	if err != nil {
-		return UpsertUserAvatarInput{}, ErrAvatarInvalid
-	}
-	if len(decoded) > maxInlineAvatarBytes {
-		return UpsertUserAvatarInput{}, ErrAvatarTooLarge
-	}
-
-	if len(decoded) > targetAvatarBytes {
-		decoded, contentType, err = compressInlineAvatar(decoded)
-		if err != nil {
-			return UpsertUserAvatarInput{}, err
-		}
-		raw = "data:" + contentType + ";base64," + base64.StdEncoding.EncodeToString(decoded)
-	}
-
-	sum := sha256.Sum256(decoded)
-	return UpsertUserAvatarInput{
-		StorageProvider: "inline",
-		URL:             raw,
-		ContentType:     contentType,
-		ByteSize:        len(decoded),
-		SHA256:          hex.EncodeToString(sum[:]),
-	}, nil
-}
-
-func compressInlineAvatar(decoded []byte) ([]byte, string, error) {
-	src, _, err := image.Decode(bytes.NewReader(decoded))
-	if err != nil {
-		return nil, "", ErrAvatarInvalid
-	}
-
-	srcBounds := src.Bounds()
-	if srcBounds.Empty() {
-		return nil, "", ErrAvatarInvalid
-	}
-
-	for _, scale := range avatarScaleSteps {
-		width := max(1, int(float64(srcBounds.Dx())*scale))
-		height := max(1, int(float64(srcBounds.Dy())*scale))
-		dst := image.NewRGBA(image.Rect(0, 0, width, height))
-		stddraw.Draw(dst, dst.Bounds(), &image.Uniform{C: color.White}, image.Point{}, stddraw.Src)
-		xdraw.CatmullRom.Scale(dst, dst.Bounds(), src, srcBounds, stddraw.Over, nil)
-
-		for _, quality := range avatarQualitySteps {
-			var buf bytes.Buffer
-			if err := jpeg.Encode(&buf, dst, &jpeg.Options{Quality: quality}); err != nil {
-				return nil, "", ErrAvatarInvalid
-			}
-			if buf.Len() <= targetAvatarBytes {
-				return buf.Bytes(), "image/jpeg", nil
-			}
-		}
-	}
-
-	return nil, "", ErrAvatarTooLarge
 }
 
 func (s *UserService) buildEmailIdentitySummary(user *User, records []UserAuthIdentityRecord) UserIdentitySummary {

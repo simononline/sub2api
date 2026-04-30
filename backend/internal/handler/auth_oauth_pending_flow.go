@@ -1037,9 +1037,7 @@ func shouldBindPendingOAuthIdentity(session *dbent.PendingAuthSession, decision 
 }
 
 func shouldSkipAvatarAdoption(err error) bool {
-	return errors.Is(err, service.ErrAvatarInvalid) ||
-		errors.Is(err, service.ErrAvatarTooLarge) ||
-		errors.Is(err, service.ErrAvatarNotImage)
+	return errors.Is(err, service.ErrAvatarInvalid)
 }
 
 func applyPendingOAuthBinding(

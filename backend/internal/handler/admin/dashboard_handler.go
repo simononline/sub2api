@@ -526,18 +526,18 @@ func maskLeaderboardAccount(account string) string {
 	}
 	at := strings.LastIndex(account, "@")
 	if at > 0 {
-		local := maskLeaderboardSegment(account[:at])
+		local := maskLeaderboardLocalSegment(account[:at])
 		domain := account[at+1:]
 		dot := strings.LastIndex(domain, ".")
 		if dot > 0 {
-			return local + "@" + maskLeaderboardSegment(domain[:dot]) + domain[dot:]
+			return local + "@" + maskLeaderboardDomainSegment(domain[:dot]) + domain[dot:]
 		}
-		return local + "@" + maskLeaderboardSegment(domain)
+		return local + "@" + maskLeaderboardDomainSegment(domain)
 	}
-	return maskLeaderboardSegment(account)
+	return maskLeaderboardLocalSegment(account)
 }
 
-func maskLeaderboardSegment(value string) string {
+func maskLeaderboardLocalSegment(value string) string {
 	runes := []rune(strings.TrimSpace(value))
 	switch len(runes) {
 	case 0:
@@ -546,12 +546,26 @@ func maskLeaderboardSegment(value string) string {
 		return string(runes[0]) + "***"
 	case 2:
 		return string(runes[0]) + "***" + string(runes[1])
+	case 3, 4:
+		return string(runes[0]) + "****" + string(runes[len(runes)-1])
+	default:
+		return string(runes[0:2]) + "****" + string(runes[len(runes)-2:])
+	}
+}
+
+func maskLeaderboardDomainSegment(value string) string {
+	runes := []rune(strings.TrimSpace(value))
+	switch len(runes) {
+	case 0:
+		return "****"
+	case 1, 2:
+		return "***"
 	default:
 		return string(runes[0]) + "***" + string(runes[len(runes)-1])
 	}
 }
 
-func buildUserSpendingRankingPayload(ranking *usagestats.UserSpendingRankingResponse, startTime, endTime time.Time, maskAccounts bool) gin.H {
+func buildUserSpendingRankingPayload(ranking *usagestats.UserSpendingRankingResponse, startTime, endTime time.Time, maskAccounts bool, viewerUserID int64) gin.H {
 	rows := make([]usagestats.UserSpendingRankingItem, 0)
 	if ranking != nil {
 		rows = make([]usagestats.UserSpendingRankingItem, len(ranking.Ranking))
@@ -559,6 +573,9 @@ func buildUserSpendingRankingPayload(ranking *usagestats.UserSpendingRankingResp
 	}
 	if maskAccounts {
 		for i := range rows {
+			if viewerUserID > 0 && rows[i].UserID == viewerUserID {
+				continue
+			}
 			rows[i].Email = maskLeaderboardAccount(rows[i].Email)
 			rows[i].UserID = 0
 		}
@@ -594,7 +611,12 @@ func (h *DashboardHandler) respondUserSpendingRanking(c *gin.Context, maskAccoun
 		return
 	}
 
-	payload := buildUserSpendingRankingPayload(ranking, startTime, endTime, maskAccounts)
+	viewerUserID := int64(0)
+	if subject, ok := middleware.GetAuthSubjectFromContext(c); ok {
+		viewerUserID = subject.UserID
+	}
+
+	payload := buildUserSpendingRankingPayload(ranking, startTime, endTime, maskAccounts, viewerUserID)
 	c.Header("X-Snapshot-Cache", cacheStatusValue(hit))
 	response.Success(c, payload)
 }
