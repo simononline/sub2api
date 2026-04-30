@@ -455,7 +455,6 @@ export default {
     apiKeys: 'API 密钥',
     usage: '使用记录',
     leaderboard: '排行榜',
-    redeem: '兑换',
     affiliate: '邀请返利',
     profile: '个人资料',
     users: '用户管理',
@@ -674,7 +673,7 @@ export default {
 
   // Dashboard
   dashboard: {
-    title: '仪表盘',
+    title: '我的用量',
     welcomeMessage: '欢迎回来！这是您账户的概览。',
     balance: '余额',
     apiKeys: 'API 密钥',
@@ -6172,6 +6171,8 @@ export default {
     purchasePackageTitle: '立即购买套餐',
     purchasePackageDesc: '支付后获取激活码，立刻使用。',
     purchasePackageButton: '立即购买',
+    redeemCodeButton: '兑换卡密',
+    redeemDialogTitle: '兑换卡密',
     contactTitle: '联系方式',
     contactDesc: '加入群聊获取支持与套餐说明。',
     contactGroup: '加群',

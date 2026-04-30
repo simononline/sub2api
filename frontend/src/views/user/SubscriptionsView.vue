@@ -107,15 +107,25 @@
               </div>
             </div>
 
-            <a
-              href="https://pay.ldxp.cn/shop/1MS2YHDH"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-600 active:bg-orange-700 sm:w-auto"
-            >
-              <Icon name="externalLink" size="sm" />
-              {{ t("userSubscriptions.purchasePackageButton") }}
-            </a>
+            <div class="grid w-full shrink-0 grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
+              <a
+                href="https://pay.ldxp.cn/shop/1MS2YHDH"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-600 active:bg-orange-700"
+              >
+                <Icon name="externalLink" size="sm" />
+                {{ t("userSubscriptions.purchasePackageButton") }}
+              </a>
+              <button
+                type="button"
+                class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-orange-200 bg-white px-4 py-2.5 text-sm font-semibold text-orange-700 shadow-sm transition-colors hover:bg-orange-50 active:bg-orange-100 dark:border-orange-500/25 dark:bg-dark-800 dark:text-orange-200 dark:hover:bg-orange-950/30"
+                @click="showRedeemDialog = true"
+              >
+                <Icon name="key" size="sm" />
+                {{ t("userSubscriptions.redeemCodeButton") }}
+              </button>
+            </div>
           </div>
         </section>
 
@@ -517,6 +527,15 @@
           </div>
         </div>
       </div>
+
+      <BaseDialog
+        :show="showRedeemDialog"
+        :title="t('userSubscriptions.redeemDialogTitle')"
+        width="normal"
+        @close="showRedeemDialog = false"
+      >
+        <RedeemCodeForm embedded :after-redeem="handleRedeemSuccess" />
+      </BaseDialog>
     </div>
   </AppLayout>
 </template>
@@ -530,7 +549,9 @@ import subscriptionsAPI from "@/api/subscriptions";
 import type { UserSubscription } from "@/types";
 import AppLayout from "@/components/layout/AppLayout.vue";
 import Icon from "@/components/icons/Icon.vue";
+import BaseDialog from "@/components/common/BaseDialog.vue";
 import PlatformIcon from "@/components/common/PlatformIcon.vue";
+import RedeemCodeForm from "@/components/user/RedeemCodeForm.vue";
 import UserDashboardAvailableModels from "@/components/user/dashboard/UserDashboardAvailableModels.vue";
 import { modelsAPI, type GatewayModel } from "@/api/models";
 import { sanitizeComplianceText } from "@/utils/complianceText";
@@ -564,6 +585,7 @@ const availableModelsError = ref(false);
 const activeModelKeyCount = ref(0);
 const queriedModelKeyCount = ref(0);
 const failedModelKeyCount = ref(0);
+const showRedeemDialog = ref(false);
 
 function renewSubscription(subscription: UserSubscription) {
   router.push({
@@ -604,6 +626,10 @@ async function loadAvailableModels() {
   } finally {
     loadingAvailableModels.value = false;
   }
+}
+
+async function handleRedeemSuccess() {
+  await Promise.all([loadSubscriptions(), loadAvailableModels()]);
 }
 
 function getProgressWidth(

@@ -255,8 +255,15 @@
           >
             <Icon name="server" size="md" />
           </div>
-          <p class="leading-6">
-            {{ t('home.poolNotice') }}
+          <p class="pool-notice-text leading-6" :aria-label="t('home.poolNotice')">
+            <span
+              v-for="(character, index) in poolNoticeCharacters"
+              :key="`${character}-${index}`"
+              aria-hidden="true"
+              class="pool-notice-char"
+              :class="{ 'pool-notice-char-space': character === ' ' }"
+              :style="getPoolNoticeCharStyle(index)"
+            >{{ character }}</span>
           </p>
         </div>
 
@@ -284,10 +291,7 @@
 
             <!-- CTA Button -->
             <div class="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
-              <router-link
-                :to="isAuthenticated ? dashboardPath : '/login'"
-                class="btn btn-primary px-8 py-3 text-base"
-              >
+              <router-link :to="consoleEntryPath" class="btn btn-primary px-8 py-3 text-base">
                 {{ isAuthenticated ? t('home.goToDashboard') : t('home.getStarted') }}
                 <Icon name="arrowRight" size="md" class="ml-2" :stroke-width="2" />
               </router-link>
@@ -694,10 +698,7 @@
           <p class="mx-auto mb-6 max-w-2xl text-sm leading-6 text-gray-600 dark:text-dark-400">
             {{ t('home.cta.description') }}
           </p>
-          <router-link
-            :to="isAuthenticated ? dashboardPath : '/login'"
-            class="btn btn-primary px-8 py-3 text-base"
-          >
+          <router-link :to="consoleEntryPath" class="btn btn-primary px-8 py-3 text-base">
             {{ isAuthenticated ? t('home.goToDashboard') : t('home.cta.button') }}
             <Icon name="arrowRight" size="md" class="ml-2" :stroke-width="2" />
           </router-link>
@@ -786,6 +787,18 @@ const siteSubtitle = computed(() => t('admin.settings.site.siteSubtitlePlacehold
 const docUrl = computed(() => appStore.cachedPublicSettings?.doc_url || appStore.docUrl || '')
 const homeContent = computed(() => appStore.cachedPublicSettings?.home_content || '')
 const contactInfo = computed(() => appStore.contactInfo)
+const poolNoticeScanStepMs = 95
+const poolNoticeCharacters = computed(() => Array.from(t('home.poolNotice')))
+const poolNoticeScanDurationMs = computed(() => (
+  (poolNoticeCharacters.value.length * poolNoticeScanStepMs) + 1200
+))
+
+function getPoolNoticeCharStyle(index: number) {
+  return {
+    animationDelay: `${index * poolNoticeScanStepMs}ms`,
+    animationDuration: `${poolNoticeScanDurationMs.value}ms`
+  }
+}
 
 const gptServiceCards = computed<Array<{
   icon: HomeIconName
@@ -981,7 +994,9 @@ const user = computed(() => authStore.user)
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const isAdmin = computed(() => authStore.isAdmin)
 const dashboardPath = computed(() => isAdmin.value ? '/admin/dashboard' : '/dashboard')
-const consoleEntryPath = computed(() => isAuthenticated.value ? dashboardPath.value : '/login')
+const consoleEntryPath = computed(() =>
+  isAuthenticated.value ? (isAdmin.value ? '/admin/dashboard' : '/subscriptions') : '/login'
+)
 const plansEntryPath = computed(() => isAuthenticated.value ? '/purchase' : '/login')
 const avatarUrl = computed(() => user.value?.avatar_url?.trim() || '')
 const userInitials = computed(() => {
@@ -1102,6 +1117,50 @@ onBeforeUnmount(() => {
 .dropdown-leave-to {
   opacity: 0;
   transform: scale(0.95) translateY(-4px);
+}
+
+.pool-notice-text {
+  max-width: 100%;
+}
+
+.pool-notice-char {
+  display: inline-block;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  white-space: pre;
+  vertical-align: top;
+  animation-name: pool-notice-scan;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.pool-notice-char-space {
+  min-width: 0.35em;
+}
+
+@keyframes pool-notice-scan {
+  0% {
+    background: rgb(62 207 142 / 0.36);
+  }
+
+  1.4% {
+    background: rgb(62 207 142 / 0.24);
+  }
+
+  3.8% {
+    background: rgb(62 207 142 / 0.12);
+  }
+
+  5.2%,
+  100% {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pool-notice-char {
+    animation: none;
+  }
 }
 
 /* Terminal Container */

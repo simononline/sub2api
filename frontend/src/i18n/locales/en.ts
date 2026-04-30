@@ -455,7 +455,6 @@ export default {
     apiKeys: 'API Keys',
     usage: 'Usage',
     leaderboard: 'Leaderboard',
-    redeem: 'Redeem',
     affiliate: 'Affiliate Rebates',
     profile: 'Profile',
     users: 'Users',
@@ -675,7 +674,7 @@ export default {
 
   // Dashboard
   dashboard: {
-    title: 'Dashboard',
+    title: 'My Usage',
     welcomeMessage: "Welcome back! Here's an overview of your account.",
     balance: 'Balance',
     apiKeys: 'API Keys',
@@ -5217,7 +5216,7 @@ export default {
         siteNamePlaceholder: 'WeShare',
         siteNameHint: 'Displayed in emails and page titles',
         siteSubtitle: 'Site Subtitle',
-        siteSubtitlePlaceholder: '立志成为天才程序员的坚实后盾',
+        siteSubtitlePlaceholder: 'Your steadfast support on the path to becoming a great programmer',
         siteSubtitleHint: 'Displayed on login and register pages',
         apiBaseUrl: 'API Base URL',
         apiBaseUrlPlaceholder: 'https://api.example.com',
@@ -6013,6 +6012,8 @@ export default {
     purchasePackageTitle: 'Buy a package now',
     purchasePackageDesc: 'Get an activation code after payment and use it immediately.',
     purchasePackageButton: 'Buy now',
+    redeemCodeButton: 'Redeem code',
+    redeemDialogTitle: 'Redeem code',
     contactTitle: 'Contact',
     contactDesc: 'Join the group for support and package details.',
     contactGroup: 'Group',

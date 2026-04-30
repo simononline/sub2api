@@ -75,7 +75,7 @@ function simulateGuard(
       if (authState.backendModeEnabled && !authState.isAdmin) {
         return null
       }
-      return authState.isAdmin ? '/admin/dashboard' : '/dashboard'
+      return authState.isAdmin ? '/admin/dashboard' : '/subscriptions'
     }
     if (authState.backendModeEnabled && !authState.isAuthenticated) {
       const allowed = ['/login', '/key-usage', '/setup', '/payment/result']
@@ -196,14 +196,14 @@ describe('路由守卫逻辑', () => {
       hasPendingAuthSession: false,
     }
 
-    it('访问 /login 重定向到 /dashboard', () => {
+    it('访问 /login 重定向到 /subscriptions', () => {
       const redirect = simulateGuard('/login', { requiresAuth: false }, authState)
-      expect(redirect).toBe('/dashboard')
+      expect(redirect).toBe('/subscriptions')
     })
 
-    it('访问 /register 重定向到 /dashboard', () => {
+    it('访问 /register 重定向到 /subscriptions', () => {
       const redirect = simulateGuard('/register', { requiresAuth: false }, authState)
-      expect(redirect).toBe('/dashboard')
+      expect(redirect).toBe('/subscriptions')
     })
 
     it('访问 /dashboard 允许通过', () => {
