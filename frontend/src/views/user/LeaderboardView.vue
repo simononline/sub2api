@@ -71,8 +71,16 @@
             <Icon name="badge" size="lg" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-medium text-gray-500 dark:text-dark-400">{{ t('leaderboard.currentPackage') }}</p>
-            <p class="truncate text-2xl font-normal text-gray-950 dark:text-dark-50">{{ packageSummary }}</p>
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-gray-500 dark:text-dark-400">{{ t('leaderboard.currentPackage') }}</p>
+                <p class="truncate text-2xl font-normal text-gray-950 dark:text-dark-50">{{ packageSummary }}</p>
+              </div>
+              <router-link to="/subscriptions" class="btn btn-secondary btn-sm shrink-0">
+                <Icon name="creditCard" size="sm" />
+                <span>{{ t('nav.mySubscriptions') }}</span>
+              </router-link>
+            </div>
             <div class="mt-2 flex flex-wrap gap-2">
               <span
                 v-for="subscription in displayedSubscriptions.slice(0, 3)"
@@ -109,9 +117,17 @@
           <div class="stat-icon stat-icon-primary">
             <Icon name="dollar" size="lg" />
           </div>
-          <div class="min-w-0">
-            <p class="text-xs font-medium text-gray-500 dark:text-dark-400">{{ t('leaderboard.totalSpend') }}</p>
-            <p class="truncate text-2xl font-normal text-gray-950 dark:text-dark-50">{{ formatCurrency(summary.totalSpend) }}</p>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-gray-500 dark:text-dark-400">{{ t('leaderboard.totalSpend') }}</p>
+                <p class="truncate text-2xl font-normal text-gray-950 dark:text-dark-50">{{ formatCurrency(summary.totalSpend) }}</p>
+              </div>
+              <router-link to="/usage" class="btn btn-secondary btn-sm shrink-0">
+                <Icon name="chart" size="sm" />
+                <span>{{ t('nav.usage') }}</span>
+              </router-link>
+            </div>
           </div>
         </div>
         <div class="stat-card">
@@ -158,25 +174,32 @@
 
         <template v-else-if="rows.length">
           <div class="hidden overflow-x-auto md:block">
-            <table class="min-w-full text-sm">
+            <table class="w-full min-w-[800px] table-fixed text-sm">
+              <colgroup>
+                <col class="w-16" />
+                <col class="w-56" />
+                <col />
+                <col class="w-28" />
+                <col class="w-32" />
+              </colgroup>
               <thead class="bg-gray-50 dark:bg-dark-950">
                 <tr>
-                  <th class="border-b border-gray-200 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:border-dark-800 dark:text-dark-400">{{ t('leaderboard.columns.rank') }}</th>
-                  <th class="border-b border-gray-200 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:border-dark-800 dark:text-dark-400">{{ t('leaderboard.columns.account') }}</th>
-                  <th class="border-b border-gray-200 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:border-dark-800 dark:text-dark-400">{{ t('leaderboard.columns.spend') }}</th>
-                  <th class="border-b border-gray-200 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:border-dark-800 dark:text-dark-400">{{ t('leaderboard.columns.requests') }}</th>
-                  <th class="border-b border-gray-200 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:border-dark-800 dark:text-dark-400">{{ t('leaderboard.columns.tokens') }}</th>
+                  <th class="border-b border-gray-200 py-3 pl-4 pr-1 text-left text-xs font-medium text-gray-500 dark:border-dark-800 dark:text-dark-400">{{ t('leaderboard.columns.rank') }}</th>
+                  <th class="border-b border-gray-200 py-3 pl-1 pr-3 text-left text-xs font-medium text-gray-500 dark:border-dark-800 dark:text-dark-400">{{ t('leaderboard.columns.account') }}</th>
+                  <th class="border-b border-gray-200 px-3 py-3 text-left text-xs font-medium text-gray-500 dark:border-dark-800 dark:text-dark-400">{{ t('leaderboard.columns.spend') }}</th>
+                  <th class="border-b border-gray-200 px-3 py-3 text-left text-xs font-medium text-gray-500 dark:border-dark-800 dark:text-dark-400">{{ t('leaderboard.columns.requests') }}</th>
+                  <th class="border-b border-gray-200 py-3 pl-3 pr-4 text-left text-xs font-medium text-gray-500 dark:border-dark-800 dark:text-dark-400">{{ t('leaderboard.columns.tokens') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-dark-800">
                 <tr v-for="(item, index) in rows" :key="`${index}-${item.email}`" class="transition-colors hover:bg-gray-50 dark:hover:bg-dark-800/50">
-                  <td class="px-4 py-4">
+                  <td class="py-4 pl-4 pr-1">
                     <span :class="rankBadgeClass(index)">
                       #{{ index + 1 }}
                     </span>
                   </td>
-                  <td class="px-4 py-4">
-                    <div class="flex min-w-[220px] items-center gap-3">
+                  <td class="py-4 pl-1 pr-3">
+                    <div class="flex min-w-0 items-center gap-3">
                       <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 dark:border-dark-700 dark:bg-dark-950 dark:text-dark-100">
                         {{ accountInitial(item.email) }}
                       </div>
@@ -184,14 +207,14 @@
                         <div class="truncate font-medium text-gray-950 dark:text-dark-50">
                           {{ item.email || '-' }}
                         </div>
-                        <div class="mt-0.5 text-xs text-gray-500 dark:text-dark-400">
-                          {{ isMasked ? t('leaderboard.accountMaskedHint') : t('leaderboard.accountRealHint') }}
+                        <div v-if="!isMasked" class="mt-0.5 text-xs text-gray-500 dark:text-dark-400">
+                          {{ t('leaderboard.accountRealHint') }}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td class="px-4 py-4">
-                    <div class="min-w-[160px]">
+                  <td class="px-3 py-4">
+                    <div class="min-w-0">
                       <div class="font-medium text-gray-950 dark:text-dark-50">
                         {{ formatCurrency(item.actual_cost) }}
                       </div>
@@ -200,8 +223,8 @@
                       </div>
                     </div>
                   </td>
-                  <td class="px-4 py-4 text-gray-700 dark:text-dark-200">{{ formatNumber(item.requests) }}</td>
-                  <td class="px-4 py-4 text-gray-700 dark:text-dark-200">{{ formatNumber(item.tokens) }}</td>
+                  <td class="px-3 py-4 text-gray-700 dark:text-dark-200">{{ formatNumber(item.requests) }}</td>
+                  <td class="py-4 pl-3 pr-4 text-gray-700 dark:text-dark-200">{{ formatNumber(item.tokens) }}</td>
                 </tr>
               </tbody>
             </table>

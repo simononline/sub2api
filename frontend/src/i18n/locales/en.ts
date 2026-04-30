@@ -1096,7 +1096,7 @@ export default {
   leaderboard: {
     title: 'Leaderboard',
     description: 'View the user spending leaderboard',
-    descriptionMasked: 'You are viewing as a regular user. Accounts are masked while rank, spend, requests, and token totals remain visible.',
+    descriptionMasked: 'Accounts are masked, with rank, spend, requests, and token totals visible. Join the leaderboard and climb the rankings.',
     descriptionAdmin: 'You are viewing as an administrator. Real user accounts and full ranking data are visible.',
     badge: 'Usage Leaderboard',
     startDate: 'Start Date',

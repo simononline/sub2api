@@ -35,7 +35,7 @@ describe('AppSidebar admin sections', () => {
   it('places leaderboard under the public area section instead of my account', () => {
     expect(componentSource).toContain("{{ t('nav.publicArea') }}")
     expect(componentSource).toContain("const isPublicNavItem = (item: NavItem) => item.path === '/leaderboard'")
-    expect(componentSource).toContain('const adminSelfNavSections = computed(() => splitSelfNavItems(finalizeNav(buildSelfNavItems(false))))')
+    expect(componentSource).toContain('const adminSelfNavSections = computed(() => splitSelfNavItems(finalizeNav(buildSelfNavItems(false, true))))')
     expect(componentSource).toContain('const publicNavItems = computed((): NavItem[] => adminSelfNavSections.value.publicItems)')
     expect(componentSource).toContain('const personalNavItems = computed((): NavItem[] => adminSelfNavSections.value.personalItems)')
   })
