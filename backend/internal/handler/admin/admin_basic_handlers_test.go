@@ -57,6 +57,7 @@ func setupAdminRouter() (*gin.Engine, *stubAdminService) {
 	router.POST("/api/v1/admin/redeem-codes", redeemHandler.Generate)
 	router.DELETE("/api/v1/admin/redeem-codes/:id", redeemHandler.Delete)
 	router.POST("/api/v1/admin/redeem-codes/batch-delete", redeemHandler.BatchDelete)
+	router.POST("/api/v1/admin/redeem-codes/batch-delete-by-filter", redeemHandler.BatchDeleteByFilter)
 	router.POST("/api/v1/admin/redeem-codes/:id/expire", redeemHandler.Expire)
 	router.GET("/api/v1/admin/redeem-codes/:id/stats", redeemHandler.GetStats)
 
@@ -298,6 +299,12 @@ func TestRedeemHandlerEndpoints(t *testing.T) {
 
 	rec = httptest.NewRecorder()
 	req = httptest.NewRequest(http.MethodPost, "/api/v1/admin/redeem-codes/batch-delete", bytes.NewBufferString(`{"ids":[1,2]}`))
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(rec, req)
+	require.Equal(t, http.StatusOK, rec.Code)
+
+	rec = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodPost, "/api/v1/admin/redeem-codes/batch-delete-by-filter", bytes.NewBufferString(`{"type":"balance","status":"unused","search":"ABC"}`))
 	req.Header.Set("Content-Type", "application/json")
 	router.ServeHTTP(rec, req)
 	require.Equal(t, http.StatusOK, rec.Code)

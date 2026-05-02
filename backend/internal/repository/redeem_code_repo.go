@@ -6,6 +6,7 @@ import (
 	"time"
 
 	dbent "github.com/Wei-Shaw/sub2api/ent"
+	"github.com/Wei-Shaw/sub2api/ent/predicate"
 	"github.com/Wei-Shaw/sub2api/ent/redeemcode"
 	"github.com/Wei-Shaw/sub2api/ent/user"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
@@ -96,27 +97,20 @@ func (r *redeemCodeRepository) Delete(ctx context.Context, id int64) error {
 	return err
 }
 
+func (r *redeemCodeRepository) DeleteWithFilters(ctx context.Context, codeType, status, search string) (int64, error) {
+	deleted, err := r.client.RedeemCode.Delete().
+		Where(redeemCodeFilterPredicates(codeType, status, search)...).
+		Exec(ctx)
+	return int64(deleted), err
+}
+
 func (r *redeemCodeRepository) List(ctx context.Context, params pagination.PaginationParams) ([]service.RedeemCode, *pagination.PaginationResult, error) {
 	return r.ListWithFilters(ctx, params, "", "", "")
 }
 
 func (r *redeemCodeRepository) ListWithFilters(ctx context.Context, params pagination.PaginationParams, codeType, status, search string) ([]service.RedeemCode, *pagination.PaginationResult, error) {
-	q := r.client.RedeemCode.Query()
-
-	if codeType != "" {
-		q = q.Where(redeemcode.TypeEQ(codeType))
-	}
-	if status != "" {
-		q = q.Where(redeemcode.StatusEQ(status))
-	}
-	if search != "" {
-		q = q.Where(
-			redeemcode.Or(
-				redeemcode.CodeContainsFold(search),
-				redeemcode.HasUserWith(user.EmailContainsFold(search)),
-			),
-		)
-	}
+	q := r.client.RedeemCode.Query().
+		Where(redeemCodeFilterPredicates(codeType, status, search)...)
 
 	total, err := q.Count(ctx)
 	if err != nil {
@@ -140,6 +134,23 @@ func (r *redeemCodeRepository) ListWithFilters(ctx context.Context, params pagin
 	outCodes := redeemCodeEntitiesToService(codes)
 
 	return outCodes, paginationResultFromTotal(int64(total), params), nil
+}
+
+func redeemCodeFilterPredicates(codeType, status, search string) []predicate.RedeemCode {
+	predicates := make([]predicate.RedeemCode, 0, 3)
+	if codeType != "" {
+		predicates = append(predicates, redeemcode.TypeEQ(codeType))
+	}
+	if status != "" {
+		predicates = append(predicates, redeemcode.StatusEQ(status))
+	}
+	if search != "" {
+		predicates = append(predicates, redeemcode.Or(
+			redeemcode.CodeContainsFold(search),
+			redeemcode.HasUserWith(user.EmailContainsFold(search)),
+		))
+	}
+	return predicates
 }
 
 func redeemCodeListOrder(params pagination.PaginationParams) []func(*entsql.Selector) {

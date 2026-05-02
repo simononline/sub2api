@@ -106,6 +106,7 @@ type AdminService interface {
 	GenerateRedeemCodes(ctx context.Context, input *GenerateRedeemCodesInput) ([]RedeemCode, error)
 	DeleteRedeemCode(ctx context.Context, id int64) error
 	BatchDeleteRedeemCodes(ctx context.Context, ids []int64) (int64, error)
+	BatchDeleteRedeemCodesByFilter(ctx context.Context, codeType, status, search string) (int64, error)
 	ExpireRedeemCode(ctx context.Context, id int64) (*RedeemCode, error)
 	ResetAccountQuota(ctx context.Context, id int64) error
 }
@@ -2668,6 +2669,10 @@ func (s *adminServiceImpl) BatchDeleteRedeemCodes(ctx context.Context, ids []int
 		}
 	}
 	return deleted, nil
+}
+
+func (s *adminServiceImpl) BatchDeleteRedeemCodesByFilter(ctx context.Context, codeType, status, search string) (int64, error) {
+	return s.redeemCodeRepo.DeleteWithFilters(ctx, codeType, status, search)
 }
 
 func (s *adminServiceImpl) ExpireRedeemCode(ctx context.Context, id int64) (*RedeemCode, error) {

@@ -68,6 +68,12 @@ type stubAdminService struct {
 		sortOrder string
 		calls     int
 	}
+	lastBatchDeleteRedeemCodesByFilter struct {
+		codeType string
+		status   string
+		search   string
+		calls    int
+	}
 	mu sync.Mutex
 }
 
@@ -532,6 +538,14 @@ func (s *stubAdminService) DeleteRedeemCode(ctx context.Context, id int64) error
 
 func (s *stubAdminService) BatchDeleteRedeemCodes(ctx context.Context, ids []int64) (int64, error) {
 	return int64(len(ids)), nil
+}
+
+func (s *stubAdminService) BatchDeleteRedeemCodesByFilter(ctx context.Context, codeType, status, search string) (int64, error) {
+	s.lastBatchDeleteRedeemCodesByFilter.codeType = codeType
+	s.lastBatchDeleteRedeemCodesByFilter.status = status
+	s.lastBatchDeleteRedeemCodesByFilter.search = search
+	s.lastBatchDeleteRedeemCodesByFilter.calls++
+	return int64(len(s.redeems)), nil
 }
 
 func (s *stubAdminService) ExpireRedeemCode(ctx context.Context, id int64) (*service.RedeemCode, error) {

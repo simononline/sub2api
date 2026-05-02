@@ -689,6 +689,7 @@ const flagAdminPayment = () => adminSettingsStore.paymentEnabled
 function buildSelfNavItems(withDashboard: boolean, includeAvailableChannels = false): NavItem[] {
   const items: NavItem[] = [
     { path: '/subscriptions', label: t('nav.mySubscriptions'), icon: CreditCardIcon, hideInSimpleMode: true },
+    { path: '/recharge', label: t('nav.onlineRecharge'), icon: RechargeSubscriptionIcon, hideInSimpleMode: true },
   ]
   if (withDashboard) {
     items.push({ path: '/dashboard', label: t('dashboard.title'), icon: DashboardIcon })

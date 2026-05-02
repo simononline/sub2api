@@ -305,8 +305,16 @@ func (s *proxyRepoStub) ListAccountSummariesByProxyID(ctx context.Context, proxy
 }
 
 type redeemRepoStub struct {
-	deleteErrByID map[int64]error
-	deletedIDs    []int64
+	deleteErrByID     map[int64]error
+	deletedIDs        []int64
+	deleteWithFilters struct {
+		codeType string
+		status   string
+		search   string
+		calls    int
+	}
+	deleteWithFiltersDeleted int64
+	deleteWithFiltersErr     error
 }
 
 func (s *redeemRepoStub) Create(ctx context.Context, code *RedeemCode) error {
@@ -337,6 +345,17 @@ func (s *redeemRepoStub) Delete(ctx context.Context, id int64) error {
 		}
 	}
 	return nil
+}
+
+func (s *redeemRepoStub) DeleteWithFilters(ctx context.Context, codeType, status, search string) (int64, error) {
+	s.deleteWithFilters.codeType = codeType
+	s.deleteWithFilters.status = status
+	s.deleteWithFilters.search = search
+	s.deleteWithFilters.calls++
+	if s.deleteWithFiltersErr != nil {
+		return 0, s.deleteWithFiltersErr
+	}
+	return s.deleteWithFiltersDeleted, nil
 }
 
 func (s *redeemRepoStub) Use(ctx context.Context, id, userID int64) error {
@@ -600,4 +619,18 @@ func TestAdminService_BatchDeleteRedeemCodes_PartialFailures(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(2), deleted)
 	require.Equal(t, []int64{1, 2, 3}, repo.deletedIDs)
+}
+
+func TestAdminService_BatchDeleteRedeemCodesByFilter(t *testing.T) {
+	repo := &redeemRepoStub{deleteWithFiltersDeleted: 7}
+	svc := &adminServiceImpl{redeemCodeRepo: repo}
+
+	deleted, err := svc.BatchDeleteRedeemCodesByFilter(context.Background(), RedeemTypeBalance, StatusUnused, "ABC")
+
+	require.NoError(t, err)
+	require.Equal(t, int64(7), deleted)
+	require.Equal(t, 1, repo.deleteWithFilters.calls)
+	require.Equal(t, RedeemTypeBalance, repo.deleteWithFilters.codeType)
+	require.Equal(t, StatusUnused, repo.deleteWithFilters.status)
+	require.Equal(t, "ABC", repo.deleteWithFilters.search)
 }

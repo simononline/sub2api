@@ -171,9 +171,14 @@
         />
 
         <!-- Batch Actions -->
-        <div v-if="filters.status === 'unused'" class="flex justify-end">
-          <button @click="showDeleteUnusedDialog = true" class="btn btn-danger">
-            {{ t('admin.redeem.deleteAllUnused') }}
+        <div class="flex justify-end">
+          <button
+            @click="showDeleteFilteredDialog = true"
+            :disabled="loading || deletingFiltered || pagination.total === 0"
+            class="btn btn-danger flex items-center gap-2"
+          >
+            <Icon name="trash" size="sm" :stroke-width="2" />
+            {{ t('admin.redeem.deleteFiltered') }}
           </button>
         </div>
       </template>
@@ -191,16 +196,16 @@
       @cancel="showDeleteDialog = false"
     />
 
-    <!-- Delete Unused Codes Dialog -->
+    <!-- Delete Filtered Codes Dialog -->
     <ConfirmDialog
-      :show="showDeleteUnusedDialog"
-      :title="t('admin.redeem.deleteAllUnused')"
-      :message="t('admin.redeem.deleteAllUnusedConfirm')"
-      :confirm-text="t('admin.redeem.deleteAll')"
+      :show="showDeleteFilteredDialog"
+      :title="t('admin.redeem.deleteFiltered')"
+      :message="deleteFilteredConfirmMessage"
+      :confirm-text="t('admin.redeem.deleteFilteredConfirmButton')"
       :cancel-text="t('common.cancel')"
       danger
-      @confirm="confirmDeleteUnused"
-      @cancel="showDeleteUnusedDialog = false"
+      @confirm="confirmDeleteFiltered"
+      @cancel="showDeleteFilteredDialog = false"
     />
 
     <!-- Generate Codes Dialog -->
@@ -534,6 +539,7 @@ const filterStatusOptions = computed(() => [
 const codes = ref<RedeemCode[]>([])
 const loading = ref(false)
 const generating = ref(false)
+const deletingFiltered = ref(false)
 const searchQuery = ref('')
 const filters = reactive({
   type: '',
@@ -553,7 +559,7 @@ const sortState = reactive({
 let abortController: AbortController | null = null
 
 const showDeleteDialog = ref(false)
-const showDeleteUnusedDialog = ref(false)
+const showDeleteFilteredDialog = ref(false)
 const deletingCode = ref<RedeemCode | null>(null)
 const copiedCode = ref<string | null>(null)
 
@@ -584,6 +590,38 @@ const buildRedeemQueryFilters = () => ({
   sort_by: sortState.sort_by,
   sort_order: sortState.sort_order
 })
+
+const buildRedeemDeleteFilters = () => ({
+  type: (filters.type || undefined) as RedeemCodeType | undefined,
+  status: (filters.status || undefined) as 'used' | 'expired' | 'unused' | undefined,
+  search: searchQuery.value.trim() || undefined
+})
+
+const deleteFilterDescription = computed(() => {
+  const parts: string[] = []
+  if (filters.type) {
+    parts.push(t('admin.redeem.filterTypeDescription', { type: t(`admin.redeem.types.${filters.type}`) }))
+  }
+  if (filters.status) {
+    parts.push(
+      t('admin.redeem.filterStatusDescription', {
+        status: t(`admin.redeem.status.${filters.status}`)
+      })
+    )
+  }
+  const search = searchQuery.value.trim()
+  if (search) {
+    parts.push(t('admin.redeem.filterSearchDescription', { search }))
+  }
+  return parts.length > 0 ? parts.join(t('admin.redeem.filterSeparator')) : t('admin.redeem.allFilteredCodes')
+})
+
+const deleteFilteredConfirmMessage = computed(() =>
+  t('admin.redeem.deleteFilteredConfirm', {
+    count: pagination.total,
+    filters: deleteFilterDescription.value
+  })
+)
 
 const loadCodes = async () => {
   if (abortController) {
@@ -734,25 +772,20 @@ const confirmDelete = async () => {
   }
 }
 
-const confirmDeleteUnused = async () => {
+const confirmDeleteFiltered = async () => {
+  if (deletingFiltered.value) return
+
+  deletingFiltered.value = true
   try {
-    // Get all unused codes and delete them
-    const unusedCodesResponse = await adminAPI.redeem.list(1, 1000, { status: 'unused' })
-    const unusedCodeIds = unusedCodesResponse.items.map((code) => code.id)
-
-    if (unusedCodeIds.length === 0) {
-      appStore.showInfo(t('admin.redeem.noUnusedCodes'))
-      showDeleteUnusedDialog.value = false
-      return
-    }
-
-    const result = await adminAPI.redeem.batchDelete(unusedCodeIds)
+    const result = await adminAPI.redeem.batchDeleteByFilter(buildRedeemDeleteFilters())
     appStore.showSuccess(t('admin.redeem.codesDeleted', { count: result.deleted }))
-    showDeleteUnusedDialog.value = false
+    showDeleteFilteredDialog.value = false
     loadCodes()
   } catch (error: any) {
-    appStore.showError(error.response?.data?.detail || t('admin.redeem.failedToDeleteUnused'))
-    console.error('Error deleting unused codes:', error)
+    appStore.showError(error.response?.data?.detail || t('admin.redeem.failedToDeleteFiltered'))
+    console.error('Error deleting filtered codes:', error)
+  } finally {
+    deletingFiltered.value = false
   }
 }
 

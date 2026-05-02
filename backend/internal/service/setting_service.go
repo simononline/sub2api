@@ -428,6 +428,7 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		SettingKeyTablePageSizeOptions,
 		SettingKeyCustomMenuItems,
 		SettingKeyCustomEndpoints,
+		SettingKeyOnlineRechargeProducts,
 		SettingKeyLinuxDoConnectEnabled,
 		SettingKeyWeChatConnectEnabled,
 		SettingKeyWeChatConnectAppID,
@@ -526,6 +527,7 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		TablePageSizeOptions:             tablePageSizeOptions,
 		CustomMenuItems:                  settings[SettingKeyCustomMenuItems],
 		CustomEndpoints:                  settings[SettingKeyCustomEndpoints],
+		OnlineRechargeProducts:           settings[SettingKeyOnlineRechargeProducts],
 		LinuxDoOAuthEnabled:              linuxDoEnabled,
 		WeChatOAuthEnabled:               weChatEnabled,
 		WeChatOAuthOpenEnabled:           weChatOpenEnabled,
@@ -671,6 +673,7 @@ type PublicSettingsInjectionPayload struct {
 	TablePageSizeOptions             []int           `json:"table_page_size_options"`
 	CustomMenuItems                  json.RawMessage `json:"custom_menu_items"`
 	CustomEndpoints                  json.RawMessage `json:"custom_endpoints"`
+	OnlineRechargeProducts           json.RawMessage `json:"online_recharge_products"`
 	LinuxDoOAuthEnabled              bool            `json:"linuxdo_oauth_enabled"`
 	WeChatOAuthEnabled               bool            `json:"wechat_oauth_enabled"`
 	WeChatOAuthOpenEnabled           bool            `json:"wechat_oauth_open_enabled"`
@@ -727,6 +730,7 @@ func (s *SettingService) GetPublicSettingsForInjection(ctx context.Context) (any
 		TablePageSizeOptions:             settings.TablePageSizeOptions,
 		CustomMenuItems:                  filterUserVisibleMenuItems(settings.CustomMenuItems),
 		CustomEndpoints:                  safeRawJSONArray(settings.CustomEndpoints),
+		OnlineRechargeProducts:           filterEnabledOnlineRechargeProducts(settings.OnlineRechargeProducts),
 		LinuxDoOAuthEnabled:              settings.LinuxDoOAuthEnabled,
 		WeChatOAuthEnabled:               settings.WeChatOAuthEnabled,
 		WeChatOAuthOpenEnabled:           settings.WeChatOAuthOpenEnabled,
@@ -830,6 +834,41 @@ func filterUserVisibleMenuItems(raw string) json.RawMessage {
 	var filtered []json.RawMessage
 	for i, item := range items {
 		if item.Visibility != "admin" {
+			filtered = append(filtered, fullItems[i])
+		}
+	}
+	if len(filtered) == 0 {
+		return json.RawMessage("[]")
+	}
+	result, err := json.Marshal(filtered)
+	if err != nil {
+		return json.RawMessage("[]")
+	}
+	return result
+}
+
+// filterEnabledOnlineRechargeProducts filters out disabled recharge products
+// for the public frontend bootstrap payload.
+func filterEnabledOnlineRechargeProducts(raw string) json.RawMessage {
+	raw = strings.TrimSpace(raw)
+	if raw == "" || raw == "[]" {
+		return json.RawMessage("[]")
+	}
+	var items []struct {
+		Enabled *bool `json:"enabled"`
+	}
+	if err := json.Unmarshal([]byte(raw), &items); err != nil {
+		return json.RawMessage("[]")
+	}
+
+	var fullItems []json.RawMessage
+	if err := json.Unmarshal([]byte(raw), &fullItems); err != nil {
+		return json.RawMessage("[]")
+	}
+
+	var filtered []json.RawMessage
+	for i, item := range items {
+		if item.Enabled == nil || *item.Enabled {
 			filtered = append(filtered, fullItems[i])
 		}
 	}
@@ -965,6 +1004,16 @@ func (s *SettingService) UpdateSettings(ctx context.Context, settings *SystemSet
 		s.refreshCachedSettings(settings)
 	}
 	return err
+}
+
+func (s *SettingService) UpdateOnlineRechargeProducts(ctx context.Context, productsJSON string) error {
+	if err := s.settingRepo.Set(ctx, SettingKeyOnlineRechargeProducts, productsJSON); err != nil {
+		return fmt.Errorf("update online recharge products: %w", err)
+	}
+	if s.onUpdate != nil {
+		s.onUpdate()
+	}
+	return nil
 }
 
 func (s *SettingService) OIDCSecurityWriteDefaults(ctx context.Context) (bool, bool, error) {
@@ -1171,6 +1220,7 @@ func (s *SettingService) buildSystemSettingsUpdates(ctx context.Context, setting
 	updates[SettingKeyTablePageSizeOptions] = string(tablePageSizeOptionsJSON)
 	updates[SettingKeyCustomMenuItems] = settings.CustomMenuItems
 	updates[SettingKeyCustomEndpoints] = settings.CustomEndpoints
+	updates[SettingKeyOnlineRechargeProducts] = settings.OnlineRechargeProducts
 
 	// 默认配置
 	updates[SettingKeyDefaultConcurrency] = strconv.Itoa(settings.DefaultConcurrency)
@@ -1798,6 +1848,7 @@ func (s *SettingService) InitializeDefaultSettings(ctx context.Context) error {
 		SettingKeyTablePageSizeOptions:                     "[10,20,50,100]",
 		SettingKeyCustomMenuItems:                          "[]",
 		SettingKeyCustomEndpoints:                          "[]",
+		SettingKeyOnlineRechargeProducts:                   "[]",
 		SettingKeyWeChatConnectEnabled:                     "false",
 		SettingKeyWeChatConnectAppID:                       "",
 		SettingKeyWeChatConnectAppSecret:                   "",
@@ -1944,6 +1995,7 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 		PurchaseSubscriptionURL:          strings.TrimSpace(settings[SettingKeyPurchaseSubscriptionURL]),
 		CustomMenuItems:                  settings[SettingKeyCustomMenuItems],
 		CustomEndpoints:                  settings[SettingKeyCustomEndpoints],
+		OnlineRechargeProducts:           settings[SettingKeyOnlineRechargeProducts],
 		BackendModeEnabled:               settings[SettingKeyBackendModeEnabled] == "true",
 	}
 	result.TableDefaultPageSize, result.TablePageSizeOptions = parseTablePreferences(

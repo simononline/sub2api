@@ -52,6 +52,12 @@ type CreateAndRedeemCodeRequest struct {
 	Notes        string  `json:"notes"`
 }
 
+type BatchDeleteRedeemCodesByFilterRequest struct {
+	Type   string `json:"type"`
+	Status string `json:"status"`
+	Search string `json:"search"`
+}
+
 // List handles listing all redeem codes with pagination
 // GET /api/v1/admin/redeem-codes
 func (h *RedeemHandler) List(c *gin.Context) {
@@ -250,6 +256,32 @@ func (h *RedeemHandler) BatchDelete(c *gin.Context) {
 	}
 
 	deleted, err := h.adminService.BatchDeleteRedeemCodes(c.Request.Context(), req.IDs)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+
+	response.Success(c, gin.H{
+		"deleted": deleted,
+		"message": "Redeem codes deleted successfully",
+	})
+}
+
+// BatchDeleteByFilter handles batch deleting redeem codes matching list filters.
+// POST /api/v1/admin/redeem-codes/batch-delete-by-filter
+func (h *RedeemHandler) BatchDeleteByFilter(c *gin.Context) {
+	var req BatchDeleteRedeemCodesByFilterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request: "+err.Error())
+		return
+	}
+
+	search := strings.TrimSpace(req.Search)
+	if len(search) > 100 {
+		search = search[:100]
+	}
+
+	deleted, err := h.adminService.BatchDeleteRedeemCodesByFilter(c.Request.Context(), req.Type, req.Status, search)
 	if err != nil {
 		response.ErrorFrom(c, err)
 		return

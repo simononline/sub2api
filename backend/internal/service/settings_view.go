@@ -103,6 +103,7 @@ type SystemSettings struct {
 	TablePageSizeOptions        []int
 	CustomMenuItems             string // JSON array of custom menu items
 	CustomEndpoints             string // JSON array of custom endpoints
+	OnlineRechargeProducts      string // JSON array of online recharge products
 
 	DefaultConcurrency           int
 	DefaultBalance               float64
@@ -210,6 +211,7 @@ type PublicSettings struct {
 	TablePageSizeOptions        []int
 	CustomMenuItems             string // JSON array of custom menu items
 	CustomEndpoints             string // JSON array of custom endpoints
+	OnlineRechargeProducts      string // JSON array of online recharge products
 
 	LinuxDoOAuthEnabled      bool
 	WeChatOAuthEnabled       bool

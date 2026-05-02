@@ -108,15 +108,13 @@
             </div>
 
             <div class="grid w-full shrink-0 grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
-              <a
-                href="https://pay.ldxp.cn/shop/1MS2YHDH"
-                target="_blank"
-                rel="noopener noreferrer"
+              <router-link
+                to="/recharge"
                 class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-600 active:bg-orange-700"
               >
-                <Icon name="externalLink" size="sm" />
+                <Icon name="creditCard" size="sm" />
                 {{ t("userSubscriptions.purchasePackageButton") }}
-              </a>
+              </router-link>
               <button
                 type="button"
                 class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-orange-200 bg-white px-4 py-2.5 text-sm font-semibold text-orange-700 shadow-sm transition-colors hover:bg-orange-50 active:bg-orange-100 dark:border-orange-500/25 dark:bg-dark-800 dark:text-orange-200 dark:hover:bg-orange-950/30"

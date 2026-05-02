@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
@@ -50,6 +51,85 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
+}
+
+func normalizeOnlineRechargeProducts(items []dto.OnlineRechargeProduct) ([]dto.OnlineRechargeProduct, string, error) {
+	const (
+		maxRechargeProductTitleLen       = 120
+		maxRechargeProductDescriptionLen = 500
+		maxRechargeProductURLLen         = 2048
+		maxRechargeProductIDLen          = 64
+		maxRechargeProductKeywordLen     = 40
+		maxRechargeProductSortOrder      = 1000000
+	)
+
+	for i := range items {
+		items[i].Title = strings.TrimSpace(items[i].Title)
+		items[i].Description = strings.TrimSpace(items[i].Description)
+		items[i].URL = strings.TrimSpace(items[i].URL)
+		items[i].TypeKeyword = strings.TrimSpace(items[i].TypeKeyword)
+		items[i].ID = strings.TrimSpace(items[i].ID)
+
+		if items[i].Title == "" {
+			return nil, "", fmt.Errorf("Recharge product title is required")
+		}
+		if len(items[i].Title) > maxRechargeProductTitleLen {
+			return nil, "", fmt.Errorf("Recharge product title is too long (max 120 characters)")
+		}
+		if items[i].Description == "" {
+			return nil, "", fmt.Errorf("Recharge product description is required")
+		}
+		if len(items[i].Description) > maxRechargeProductDescriptionLen {
+			return nil, "", fmt.Errorf("Recharge product description is too long (max 500 characters)")
+		}
+		if items[i].URL == "" {
+			return nil, "", fmt.Errorf("Recharge product URL is required")
+		}
+		if len(items[i].URL) > maxRechargeProductURLLen {
+			return nil, "", fmt.Errorf("Recharge product URL is too long (max 2048 characters)")
+		}
+		if err := config.ValidateAbsoluteHTTPURL(items[i].URL); err != nil {
+			return nil, "", fmt.Errorf("Recharge product URL must be an absolute http(s) URL")
+		}
+		if items[i].TypeKeyword == "" {
+			return nil, "", fmt.Errorf("Recharge product type keyword is required")
+		}
+		if len(items[i].TypeKeyword) > maxRechargeProductKeywordLen {
+			return nil, "", fmt.Errorf("Recharge product type keyword is too long (max 40 characters)")
+		}
+		if items[i].SortOrder < 0 || items[i].SortOrder > maxRechargeProductSortOrder {
+			return nil, "", fmt.Errorf("Recharge product sort order must be between 0 and 1000000")
+		}
+		if items[i].ID == "" {
+			id, err := generateMenuItemID()
+			if err != nil {
+				return nil, "", err
+			}
+			items[i].ID = id
+		} else if len(items[i].ID) > maxRechargeProductIDLen {
+			return nil, "", fmt.Errorf("Recharge product ID is too long (max 64 characters)")
+		} else if !menuItemIDPattern.MatchString(items[i].ID) {
+			return nil, "", fmt.Errorf("Recharge product ID contains invalid characters")
+		}
+	}
+
+	seen := make(map[string]struct{}, len(items))
+	for _, item := range items {
+		if _, exists := seen[item.ID]; exists {
+			return nil, "", fmt.Errorf("Duplicate recharge product ID: %s", item.ID)
+		}
+		seen[item.ID] = struct{}{}
+	}
+
+	sort.SliceStable(items, func(i, j int) bool {
+		return items[i].SortOrder < items[j].SortOrder
+	})
+
+	payload, err := json.Marshal(items)
+	if err != nil {
+		return nil, "", fmt.Errorf("serialize recharge products: %w", err)
+	}
+	return items, string(payload), nil
 }
 
 // SettingHandler 系统设置处理器
@@ -183,6 +263,7 @@ func (h *SettingHandler) GetSettings(c *gin.Context) {
 		TablePageSizeOptions:                   settings.TablePageSizeOptions,
 		CustomMenuItems:                        dto.ParseCustomMenuItems(settings.CustomMenuItems),
 		CustomEndpoints:                        dto.ParseCustomEndpoints(settings.CustomEndpoints),
+		OnlineRechargeProducts:                 dto.ParseOnlineRechargeProducts(settings.OnlineRechargeProducts),
 		DefaultConcurrency:                     settings.DefaultConcurrency,
 		DefaultBalance:                         settings.DefaultBalance,
 		AffiliateRebateRate:                    settings.AffiliateRebateRate,
@@ -328,20 +409,21 @@ type UpdateSettingsRequest struct {
 	OIDCConnectUserInfoUsernamePath string `json:"oidc_connect_userinfo_username_path"`
 
 	// OEM设置
-	SiteName                    string                `json:"site_name"`
-	SiteLogo                    string                `json:"site_logo"`
-	SiteSubtitle                string                `json:"site_subtitle"`
-	APIBaseURL                  string                `json:"api_base_url"`
-	ContactInfo                 string                `json:"contact_info"`
-	DocURL                      string                `json:"doc_url"`
-	HomeContent                 string                `json:"home_content"`
-	HideCcsImportButton         bool                  `json:"hide_ccs_import_button"`
-	PurchaseSubscriptionEnabled *bool                 `json:"purchase_subscription_enabled"`
-	PurchaseSubscriptionURL     *string               `json:"purchase_subscription_url"`
-	TableDefaultPageSize        int                   `json:"table_default_page_size"`
-	TablePageSizeOptions        []int                 `json:"table_page_size_options"`
-	CustomMenuItems             *[]dto.CustomMenuItem `json:"custom_menu_items"`
-	CustomEndpoints             *[]dto.CustomEndpoint `json:"custom_endpoints"`
+	SiteName                    string                       `json:"site_name"`
+	SiteLogo                    string                       `json:"site_logo"`
+	SiteSubtitle                string                       `json:"site_subtitle"`
+	APIBaseURL                  string                       `json:"api_base_url"`
+	ContactInfo                 string                       `json:"contact_info"`
+	DocURL                      string                       `json:"doc_url"`
+	HomeContent                 string                       `json:"home_content"`
+	HideCcsImportButton         bool                         `json:"hide_ccs_import_button"`
+	PurchaseSubscriptionEnabled *bool                        `json:"purchase_subscription_enabled"`
+	PurchaseSubscriptionURL     *string                      `json:"purchase_subscription_url"`
+	TableDefaultPageSize        int                          `json:"table_default_page_size"`
+	TablePageSizeOptions        []int                        `json:"table_page_size_options"`
+	CustomMenuItems             *[]dto.CustomMenuItem        `json:"custom_menu_items"`
+	CustomEndpoints             *[]dto.CustomEndpoint        `json:"custom_endpoints"`
+	OnlineRechargeProducts      *[]dto.OnlineRechargeProduct `json:"online_recharge_products"`
 
 	// 默认配置
 	DefaultConcurrency                       int                               `json:"default_concurrency"`
@@ -1055,6 +1137,16 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		customEndpointsJSON = string(endpointBytes)
 	}
 
+	onlineRechargeProductsJSON := previousSettings.OnlineRechargeProducts
+	if req.OnlineRechargeProducts != nil {
+		_, productsJSON, err := normalizeOnlineRechargeProducts(*req.OnlineRechargeProducts)
+		if err != nil {
+			response.BadRequest(c, err.Error())
+			return
+		}
+		onlineRechargeProductsJSON = productsJSON
+	}
+
 	// Ops metrics collector interval validation (seconds).
 	if req.OpsMetricsIntervalSeconds != nil {
 		v := *req.OpsMetricsIntervalSeconds
@@ -1173,6 +1265,7 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		TablePageSizeOptions:             req.TablePageSizeOptions,
 		CustomMenuItems:                  customMenuJSON,
 		CustomEndpoints:                  customEndpointsJSON,
+		OnlineRechargeProducts:           onlineRechargeProductsJSON,
 		DefaultConcurrency:               req.DefaultConcurrency,
 		DefaultBalance:                   req.DefaultBalance,
 		AffiliateRebateRate:              affiliateRebateRate,
@@ -1499,6 +1592,7 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		TablePageSizeOptions:                   updatedSettings.TablePageSizeOptions,
 		CustomMenuItems:                        dto.ParseCustomMenuItems(updatedSettings.CustomMenuItems),
 		CustomEndpoints:                        dto.ParseCustomEndpoints(updatedSettings.CustomEndpoints),
+		OnlineRechargeProducts:                 dto.ParseOnlineRechargeProducts(updatedSettings.OnlineRechargeProducts),
 		DefaultConcurrency:                     updatedSettings.DefaultConcurrency,
 		DefaultBalance:                         updatedSettings.DefaultBalance,
 		AffiliateRebateRate:                    updatedSettings.AffiliateRebateRate,
@@ -1566,6 +1660,33 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		AffiliateEnabled: updatedSettings.AffiliateEnabled,
 	}
 	response.Success(c, systemSettingsResponseData(payload, updatedAuthSourceDefaults))
+}
+
+type UpdateOnlineRechargeProductsRequest struct {
+	Products []dto.OnlineRechargeProduct `json:"products"`
+}
+
+// UpdateOnlineRechargeProducts updates the configurable packages shown on the recharge page.
+// PUT /api/v1/admin/settings/online-recharge-products
+func (h *SettingHandler) UpdateOnlineRechargeProducts(c *gin.Context) {
+	var req UpdateOnlineRechargeProductsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request: "+err.Error())
+		return
+	}
+
+	products, productsJSON, err := normalizeOnlineRechargeProducts(req.Products)
+	if err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+
+	if err := h.settingService.UpdateOnlineRechargeProducts(c.Request.Context(), productsJSON); err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+
+	response.Success(c, products)
 }
 
 // hasPaymentFields returns true if any payment-related field was explicitly provided.
@@ -1897,6 +2018,9 @@ func diffSettings(before *service.SystemSettings, after *service.SystemSettings,
 	}
 	if before.CustomEndpoints != after.CustomEndpoints {
 		changed = append(changed, "custom_endpoints")
+	}
+	if before.OnlineRechargeProducts != after.OnlineRechargeProducts {
+		changed = append(changed, "online_recharge_products")
 	}
 	if before.EnableFingerprintUnification != after.EnableFingerprintUnification {
 		changed = append(changed, "enable_fingerprint_unification")

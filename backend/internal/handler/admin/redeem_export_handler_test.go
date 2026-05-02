@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -46,4 +47,28 @@ func TestRedeemExportSortDefaults(t *testing.T) {
 	require.Equal(t, 1, adminSvc.lastListRedeemCodes.calls)
 	require.Equal(t, "id", adminSvc.lastListRedeemCodes.sortBy)
 	require.Equal(t, "desc", adminSvc.lastListRedeemCodes.sortOrder)
+}
+
+func TestRedeemBatchDeleteByFilterPassesFilters(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	adminSvc := newStubAdminService()
+
+	h := NewRedeemHandler(adminSvc, nil)
+	router.POST("/api/v1/admin/redeem-codes/batch-delete-by-filter", h.BatchDeleteByFilter)
+
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/api/v1/admin/redeem-codes/batch-delete-by-filter",
+		bytes.NewBufferString(`{"type":"balance","status":"unused","search":" ABC "}`),
+	)
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(rec, req)
+	require.Equal(t, http.StatusOK, rec.Code)
+
+	require.Equal(t, 1, adminSvc.lastBatchDeleteRedeemCodesByFilter.calls)
+	require.Equal(t, "balance", adminSvc.lastBatchDeleteRedeemCodesByFilter.codeType)
+	require.Equal(t, "unused", adminSvc.lastBatchDeleteRedeemCodesByFilter.status)
+	require.Equal(t, "ABC", adminSvc.lastBatchDeleteRedeemCodesByFilter.search)
 }

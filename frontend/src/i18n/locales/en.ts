@@ -477,6 +477,7 @@ export default {
     logout: 'Logout',
     github: 'GitHub',
     mySubscriptions: 'My Subscriptions',
+    onlineRecharge: 'Online Recharge',
     buySubscription: 'Recharge / Subscription',
     docs: 'Docs',
     helpGuide: 'Help Guide',
@@ -1233,6 +1234,108 @@ export default {
     failedToRedeem: 'Failed to redeem code. Please check the code and try again.',
     subscriptionRefreshFailed: 'Redeemed successfully, but failed to refresh subscription status.',
     pleaseEnterCode: 'Please enter a redeem code'
+  },
+
+  onlineRecharge: {
+    title: 'Online Recharge',
+    subtitle: 'Buy a redeem code and apply it to your account',
+    currentBalance: 'Current Balance',
+    requests: 'requests',
+    productList: 'Products',
+    productHint: 'Choose a product to purchase a redeem code on a third-party site, then return here and enter the code.',
+    buyRedeemCode: 'Buy redeem code',
+    useRedeemCode: 'Use Redeem Code',
+    codePlaceholder: 'Enter redeem code',
+    redeemHint: 'After purchasing from the third party, paste the redeem code here.',
+    redeem: 'Redeem',
+    redeeming: 'Redeeming...',
+    redeemSuccess: 'Redeemed successfully',
+    balanceRedeemSuccess: 'Redeemed successfully. Current balance is ${balance}',
+    concurrencyRedeemSuccess: 'Redeemed successfully. Current concurrency is {concurrency} requests',
+    subscriptionRedeemSuccess: 'Subscription redeemed successfully',
+    subscriptionRedeemSuccessWithGroup: 'Subscription redeemed successfully. {group} is now active',
+    storeLinkMissing: 'Third-party purchase link is not configured',
+    configureProducts: 'Configure Products',
+    loadingProducts: 'Loading products...',
+    filterAll: 'All',
+    productsEmpty: 'No products in this category',
+    configTitle: 'Configure Recharge Products',
+    configSubtitle: 'Enabled state, sort order, title, description, type keyword, and target URL are shown on this recharge page.',
+    quickConfigTitle: 'Quick Config',
+    quickConfigHint: 'Load the recommended template or paste full JSON to generate products at once.',
+    recommendedConfig: 'Recommended Config',
+    recommendedApplied: 'Recommended config loaded. Replace the links with your purchase URLs',
+    jsonConfig: 'JSON Config',
+    jsonConfigLabel: 'Product JSON',
+    jsonConfigPlaceholder: 'Paste a product JSON array, or an object with products / online_recharge_products',
+    jsonConfigHint: 'Applying JSON replaces the products in this dialog. Changes take effect after saving.',
+    refreshJsonConfig: 'Generate Current JSON',
+    applyJsonConfig: 'Apply JSON',
+    invalidJsonConfig: 'Invalid JSON. Please check and try again',
+    jsonConfigMustBeArray: 'JSON must be a product array, or an object with products / online_recharge_products',
+    jsonConfigApplied: 'JSON configuration applied',
+    productItem: 'Product {index}',
+    productEnabled: 'Enabled',
+    productDisabled: 'Disabled',
+    productTitleLabel: 'Title',
+    productTitlePlaceholder: 'Example: OpenAI monthly package',
+    productDescriptionLabel: 'Description',
+    productDescriptionPlaceholder: 'Example: Daily quota $20, weekly quota $100',
+    targetUrlLabel: 'Target URL',
+    targetUrlPlaceholder: 'https://example.com/buy',
+    typeKeywordLabel: 'Type Keyword',
+    typeKeywordPlaceholder: 'OpenAI, Claude, Gemini, or a custom keyword',
+    sortOrderLabel: 'Sort Order',
+    sortOrderPlaceholder: 'Lower numbers appear first',
+    addProduct: 'Add Product',
+    sortProducts: 'Sort by Order',
+    removeProduct: 'Remove Product',
+    moveUp: 'Move up',
+    moveDown: 'Move down',
+    saveProducts: 'Save Products',
+    savingProducts: 'Saving...',
+    noProductToSave: 'Keep at least one product',
+    productRequired: 'Fill in product title, description, type keyword, and target URL',
+    invalidProductUrl: 'Target URL must be an absolute http(s) URL',
+    productsSaved: 'Product configuration saved',
+    productsLoadFailed: 'Failed to load product configuration',
+    productsSaveFailed: 'Failed to save product configuration',
+    steps: {
+      selectProduct: 'Select product',
+      buyRedeemCode: 'Buy redeem code',
+      useRedeemCode: 'Use redeem code'
+    },
+    products: {
+      lite: {
+        name: 'Codex Monthly lite',
+        price: '(50 CNY)',
+        quota: 'Daily quota $20 Weekly quota $100 Monthly quota $300'
+      },
+      plus: {
+        name: 'Codex Monthly plus',
+        price: '(100 CNY)',
+        quota: 'Daily quota $50 Weekly quota $250 Monthly quota $750'
+      },
+      pro: {
+        name: 'Codex Monthly pro',
+        price: '(150 CNY)',
+        quota: 'Daily quota $80 Weekly quota $400 Monthly quota $1200'
+      }
+    },
+    recommended: {
+      openai: {
+        title: 'OpenAI Recommended Package',
+        description: 'For OpenAI model usage. Return to this page to redeem after purchase.'
+      },
+      claude: {
+        title: 'Claude Recommended Package',
+        description: 'For Claude model usage. Return to this page to redeem after purchase.'
+      },
+      gemini: {
+        title: 'Gemini Recommended Package',
+        description: 'For Gemini model usage. Return to this page to redeem after purchase.'
+      }
+    }
   },
 
   // Profile
@@ -3880,12 +3983,21 @@ export default {
       userPrefix: 'User #{id}',
       exportCsv: 'Export CSV',
       deleteAllUnused: 'Delete All Unused Codes',
+      deleteFiltered: 'Delete Filtered Codes',
       deleteCode: 'Delete Redeem Code',
       deleteCodeConfirm:
         'Are you sure you want to delete this redeem code? This action cannot be undone.',
       deleteAllUnusedConfirm:
         'Are you sure you want to delete all unused (active) redeem codes? This action cannot be undone.',
+      deleteFilteredConfirm:
+        'Delete {count} redeem code(s) matching the current filters ({filters})? This action cannot be undone.',
       deleteAll: 'Delete All',
+      deleteFilteredConfirmButton: 'Delete Filtered',
+      allFilteredCodes: 'all redeem codes',
+      filterTypeDescription: 'type: {type}',
+      filterStatusDescription: 'status: {status}',
+      filterSearchDescription: 'search: {search}',
+      filterSeparator: ', ',
       generateCodesTitle: 'Generate Redeem Codes',
       generatedSuccessfully: 'Generated Successfully',
       codesCreated: '{count} redeem code(s) created',
@@ -3900,13 +4012,14 @@ export default {
       download: 'Download',
       codesExported: 'Codes exported successfully',
       codeDeleted: 'Redeem code deleted successfully',
-      codesDeleted: 'Successfully deleted {count} unused code(s)',
+      codesDeleted: 'Successfully deleted {count} redeem code(s)',
       noUnusedCodes: 'No unused codes to delete',
       failedToLoad: 'Failed to load redeem codes',
       failedToGenerate: 'Failed to generate codes',
       failedToExport: 'Failed to export codes',
       failedToDelete: 'Failed to delete code',
       failedToDeleteUnused: 'Failed to delete unused codes',
+      failedToDeleteFiltered: 'Failed to delete filtered redeem codes',
       failedToCopy: 'Failed to copy codes',
       types: {
         balance: 'Balance',

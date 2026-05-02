@@ -4,7 +4,7 @@
  */
 
 import { apiClient } from "../client";
-import type { CustomMenuItem, CustomEndpoint, NotifyEmailEntry } from "@/types";
+import type { CustomMenuItem, CustomEndpoint, NotifyEmailEntry, OnlineRechargeProduct } from "@/types";
 
 export interface DefaultSubscriptionSetting {
   group_id: number;
@@ -350,6 +350,7 @@ export interface SystemSettings {
   backend_mode_enabled: boolean;
   custom_menu_items: CustomMenuItem[];
   custom_endpoints: CustomEndpoint[];
+  online_recharge_products?: OnlineRechargeProduct[];
   // SMTP settings
   smtp_host: string;
   smtp_port: number;
@@ -539,6 +540,7 @@ export interface UpdateSettingsRequest {
   backend_mode_enabled?: boolean;
   custom_menu_items?: CustomMenuItem[];
   custom_endpoints?: CustomEndpoint[];
+  online_recharge_products?: OnlineRechargeProduct[];
   smtp_host?: string;
   smtp_port?: number;
   smtp_username?: string;
@@ -674,6 +676,16 @@ export async function updateSettings(
   const { data } = await apiClient.put<SystemSettings>(
     "/admin/settings",
     settings,
+  );
+  return data;
+}
+
+export async function updateOnlineRechargeProducts(
+  products: OnlineRechargeProduct[],
+): Promise<OnlineRechargeProduct[]> {
+  const { data } = await apiClient.put<OnlineRechargeProduct[]>(
+    "/admin/settings/online-recharge-products",
+    { products },
   );
   return data;
 }
@@ -990,6 +1002,7 @@ export async function resetWebSearchUsage(payload: {
 export const settingsAPI = {
   getSettings,
   updateSettings,
+  updateOnlineRechargeProducts,
   testSmtpConnection,
   sendTestEmail,
   getAdminApiKey,

@@ -752,6 +752,7 @@ func TestAPIContracts(t *testing.T) {
 					"openai_advanced_scheduler_enabled": true,
 					"custom_menu_items": [],
 					"custom_endpoints": [],
+					"online_recharge_products": [],
 					"payment_enabled": false,
 					"payment_min_amount": 0,
 					"payment_max_amount": 0,
@@ -900,6 +901,7 @@ func TestAPIContracts(t *testing.T) {
 					"table_page_size_options": [10, 20, 50],
 					"custom_menu_items": [],
 					"custom_endpoints": [],
+					"online_recharge_products": [],
 					"default_concurrency": 0,
 					"default_balance": 0,
 					"affiliate_rebate_rate": 20,
@@ -1702,6 +1704,10 @@ func (stubRedeemCodeRepo) Update(ctx context.Context, code *service.RedeemCode) 
 
 func (stubRedeemCodeRepo) Delete(ctx context.Context, id int64) error {
 	return errors.New("not implemented")
+}
+
+func (stubRedeemCodeRepo) DeleteWithFilters(ctx context.Context, codeType, status, search string) (int64, error) {
+	return 0, errors.New("not implemented")
 }
 
 func (stubRedeemCodeRepo) Use(ctx context.Context, id, userID int64) error {

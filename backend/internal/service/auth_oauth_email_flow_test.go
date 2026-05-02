@@ -63,6 +63,10 @@ func (s *redeemCodeRepoStub) Delete(context.Context, int64) error {
 	panic("unexpected Delete call")
 }
 
+func (s *redeemCodeRepoStub) DeleteWithFilters(context.Context, string, string, string) (int64, error) {
+	panic("unexpected DeleteWithFilters call")
+}
+
 func (s *redeemCodeRepoStub) Use(_ context.Context, id, userID int64) error {
 	for code, redeemCode := range s.codesByCode {
 		if redeemCode.ID != id {

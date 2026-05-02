@@ -44,6 +44,7 @@ type RedeemCodeRepository interface {
 	GetByCode(ctx context.Context, code string) (*RedeemCode, error)
 	Update(ctx context.Context, code *RedeemCode) error
 	Delete(ctx context.Context, id int64) error
+	DeleteWithFilters(ctx context.Context, codeType, status, search string) (int64, error)
 	Use(ctx context.Context, id, userID int64) error
 
 	List(ctx context.Context, params pagination.PaginationParams) ([]RedeemCode, *pagination.PaginationResult, error)

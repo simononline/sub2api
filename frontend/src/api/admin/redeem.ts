@@ -114,6 +114,26 @@ export async function batchDelete(ids: number[]): Promise<{
 }
 
 /**
+ * Batch delete redeem codes matching filters
+ * @param filters - Filters used to target redeem codes
+ * @returns Success confirmation
+ */
+export async function batchDeleteByFilter(filters?: {
+  type?: RedeemCodeType
+  status?: 'used' | 'expired' | 'unused'
+  search?: string
+}): Promise<{
+  deleted: number
+  message: string
+}> {
+  const { data } = await apiClient.post<{
+    deleted: number
+    message: string
+  }>('/admin/redeem-codes/batch-delete-by-filter', filters || {})
+  return data
+}
+
+/**
  * Expire redeem code
  * @param id - Redeem code ID
  * @returns Updated redeem code
@@ -171,6 +191,7 @@ export const redeemAPI = {
   generate,
   delete: deleteCode,
   batchDelete,
+  batchDeleteByFilter,
   expire,
   getStats,
   exportCodes

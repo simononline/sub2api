@@ -2,7 +2,11 @@ param(
     [Parameter(Position = 0)]
     [string]$Action = "up",
 
+    [string]$RemoteHost = "",
+
     [string]$RemotePassword = "",
+
+    [switch]$PromptRemote,
 
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$ExtraArgs = @()
@@ -71,6 +75,47 @@ function Invoke-Checked {
     if ($exitCode -ne 0) {
         Die "command failed: $File $($Arguments -join ' ')"
     }
+}
+
+function Invoke-NativeProbe {
+    param(
+        [string]$File,
+        [string[]]$Arguments
+    )
+
+    $oldErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = @(& $File @Arguments 2>&1 | ForEach-Object { [string]$_ })
+        $exitCode = $LASTEXITCODE
+    } catch {
+        $output = @([string]$_)
+        $exitCode = 1
+    } finally {
+        $ErrorActionPreference = $oldErrorActionPreference
+    }
+
+    return [pscustomobject]@{
+        ExitCode = $exitCode
+        Output = $output
+    }
+}
+
+function Require-DockerDaemon {
+    Require-Command docker
+
+    $result = Invoke-NativeProbe docker @("version", "--format", "{{.Server.Version}}")
+    $serverVersion = (($result.Output | Select-Object -First 1) -as [string]).Trim()
+    if ($result.ExitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace($serverVersion)) {
+        return
+    }
+
+    $details = (($result.Output | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 3) -join " ")
+    if ([string]::IsNullOrWhiteSpace($details)) {
+        $details = "docker daemon did not respond"
+    }
+
+    Die "Docker is installed but the daemon is not reachable. Start Docker Desktop and wait for the Linux engine, then retry. If you intentionally use another Docker daemon, switch your Docker context or DOCKER_HOST before running. Details: $details"
 }
 
 function Split-CommandLine {
@@ -357,18 +402,23 @@ function Test-Enabled {
 function Test-ImageExists {
     param([string]$Image)
 
-    $imageId = & docker images --quiet $Image 2>$null | Select-Object -First 1
+    $result = Invoke-NativeProbe docker @("images", "--quiet", $Image)
+    if ($result.ExitCode -ne 0) {
+        return $false
+    }
+
+    $imageId = $result.Output | Select-Object -First 1
     return (-not [string]::IsNullOrWhiteSpace(($imageId -as [string])))
 }
 
 function Get-ImagePlatform {
     param([string]$Image)
 
-    $output = & docker image inspect --format '{{.Os}}/{{.Architecture}}{{if .Variant}}/{{.Variant}}{{end}}' $Image 2>$null
-    if ($LASTEXITCODE -ne 0) {
+    $result = Invoke-NativeProbe docker @("image", "inspect", "--format", "{{.Os}}/{{.Architecture}}{{if .Variant}}/{{.Variant}}{{end}}", $Image)
+    if ($result.ExitCode -ne 0) {
         return ""
     }
-    return (($output | Select-Object -First 1) -as [string]).Trim()
+    return (($result.Output | Select-Object -First 1) -as [string]).Trim()
 }
 
 function Test-ImageMatchesPlatform {
@@ -454,7 +504,7 @@ function Rebuild-Image {
 }
 
 function Build-Images {
-    Require-Command docker
+    Require-DockerDaemon
 
     Log "project dir: $RootDir"
     Log "image prefix: $ProjectName"
@@ -749,6 +799,55 @@ function Get-RemotePasswordValue {
     return (First-Value $RemotePassword (Get-EnvValue "REMOTE_PASSWORD") (Get-EnvValue "SSHPASS"))
 }
 
+function ConvertFrom-SecureStringToPlainText {
+    param([Security.SecureString]$SecureValue)
+
+    if ($null -eq $SecureValue) {
+        return ""
+    }
+
+    $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureValue)
+    try {
+        return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+    } finally {
+        if ($ptr -ne [IntPtr]::Zero) {
+            [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+        }
+    }
+}
+
+function Prompt-RemoteConnectionIfNeeded {
+    $resolvedRemoteHost = First-Value $RemoteHost (Get-EnvValue "REMOTE_HOST")
+    if ($PromptRemote -or [string]::IsNullOrWhiteSpace($resolvedRemoteHost)) {
+        $hostPrompt = "Remote SSH host/IP"
+        if (-not [string]::IsNullOrWhiteSpace($resolvedRemoteHost)) {
+            $hostPrompt += " [$resolvedRemoteHost]"
+        }
+
+        $inputHost = Read-Host $hostPrompt
+        if (-not [string]::IsNullOrWhiteSpace($inputHost)) {
+            $script:RemoteHost = $inputHost.Trim()
+        } else {
+            $script:RemoteHost = $resolvedRemoteHost
+        }
+    } else {
+        $script:RemoteHost = $resolvedRemoteHost
+    }
+
+    if ([string]::IsNullOrWhiteSpace($script:RemoteHost)) {
+        Die "remote host is empty. Set -RemoteHost, REMOTE_HOST, or enter it when prompted"
+    }
+
+    $resolvedPassword = Get-RemotePasswordValue
+    if ($PromptRemote -or [string]::IsNullOrEmpty($resolvedPassword)) {
+        $securePassword = Read-Host "Remote SSH password (leave empty to use SSH key)" -AsSecureString
+        $plainPassword = ConvertFrom-SecureStringToPlainText $securePassword
+        if (-not [string]::IsNullOrEmpty($plainPassword)) {
+            $script:RemotePassword = $plainPassword
+        }
+    }
+}
+
 function Enable-AskPass {
     $password = Get-RemotePasswordValue
     if ([string]::IsNullOrEmpty($password)) {
@@ -851,7 +950,7 @@ function Invoke-SshRemote {
 }
 
 function Get-RemoteDatabaseContainerIp {
-    $format = '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{"\n"}}{{end}}'
+    $format = '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
     $command = "container='$RemoteDatabaseContainer'; if command -v docker >/dev/null 2>&1; then docker inspect -f '$format' `"`$container`" 2>/dev/null || sudo docker inspect -f '$format' `"`$container`"; fi"
     $result = Invoke-SshRemote $command
     foreach ($line in $result.Output) {
@@ -987,17 +1086,19 @@ function Start-Tunnel {
 }
 
 function Find-Compose {
-    & docker compose version *> $null
-    if ($LASTEXITCODE -eq 0) {
-        return [pscustomobject]@{
-            File = "docker"
-            Prefix = @("compose")
+    if (Get-Command docker -ErrorAction SilentlyContinue) {
+        $dockerCompose = Invoke-NativeProbe docker @("compose", "version")
+        if ($dockerCompose.ExitCode -eq 0) {
+            return [pscustomobject]@{
+                File = "docker"
+                Prefix = @("compose")
+            }
         }
     }
 
     if (Get-Command docker-compose -ErrorAction SilentlyContinue) {
-        & docker-compose version *> $null
-        if ($LASTEXITCODE -eq 0) {
+        $dockerCompose = Invoke-NativeProbe docker-compose @("version")
+        if ($dockerCompose.ExitCode -eq 0) {
             return [pscustomobject]@{
                 File = "docker-compose"
                 Prefix = @()
@@ -1012,20 +1113,29 @@ function Invoke-Compose {
     param([string[]]$Arguments)
 
     $compose = Find-Compose
+    if ($Arguments.Count -eq 0 -or $Arguments[0] -ne "config") {
+        Require-DockerDaemon
+    }
+
     $oldConvert = $env:COMPOSE_CONVERT_WINDOWS_PATHS
     $env:COMPOSE_CONVERT_WINDOWS_PATHS = First-Value (Get-EnvValue "COMPOSE_CONVERT_WINDOWS_PATHS") "0"
+    $oldErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     try {
         $composeArgs = $compose.Prefix + @("--env-file", $RuntimeEnvFile, "-f", $RuntimeComposeFile) + $Arguments
         & $compose.File @composeArgs
-        if ($LASTEXITCODE -ne 0) {
-            Die "docker compose failed: $($Arguments -join ' ')"
-        }
+        $exitCode = $LASTEXITCODE
     } finally {
+        $ErrorActionPreference = $oldErrorActionPreference
         if ($null -eq $oldConvert) {
             [Environment]::SetEnvironmentVariable("COMPOSE_CONVERT_WINDOWS_PATHS", $null, "Process")
         } else {
             $env:COMPOSE_CONVERT_WINDOWS_PATHS = $oldConvert
         }
+    }
+
+    if ($exitCode -ne 0) {
+        Die "docker compose failed: $($Arguments -join ' ')"
     }
 }
 
@@ -1043,8 +1153,9 @@ Usage:
   .\deploy\$ScriptName config   Render the generated compose config
 
 PowerShell password examples:
-  .\deploy\$ScriptName deploy -RemotePassword '<ssh-password>'
-  try { `$env:REMOTE_PASSWORD='<ssh-password>'; .\deploy\$ScriptName deploy } finally { Remove-Item Env:REMOTE_PASSWORD -ErrorAction SilentlyContinue }
+  .\deploy\$ScriptName deploy -RemoteHost '43.160.239.168' -RemotePassword '<ssh-password>'
+  .\deploy\$ScriptName deploy -PromptRemote
+  try { `$env:REMOTE_HOST='43.160.239.168'; `$env:REMOTE_PASSWORD='<ssh-password>'; .\deploy\$ScriptName deploy } finally { Remove-Item Env:REMOTE_HOST, Env:REMOTE_PASSWORD -ErrorAction SilentlyContinue }
 
 SSH proxy examples:
   `$env:SSH_PROXY_URL='socks5://127.0.0.1:7890'; .\deploy\$ScriptName up -RemotePassword '<ssh-password>'
@@ -1107,7 +1218,7 @@ $BuildFrontend = Get-EnvValue "BUILD_FRONTEND" "1"
 $StartTunnel = Get-EnvValue "START_TUNNEL" "1"
 
 $RemoteUser = Get-EnvValue "REMOTE_USER" "ubuntu"
-$RemoteHost = Get-EnvValue "REMOTE_HOST" "43.160.239.168"
+$RemoteHost = First-Value $RemoteHost (Get-EnvValue "REMOTE_HOST")
 $RemotePort = Get-EnvValue "REMOTE_PORT" "22"
 $RemoteDatabaseHost = Get-EnvValue "REMOTE_DATABASE_HOST" "127.0.0.1"
 $RemoteDatabasePort = Get-EnvValue "REMOTE_DATABASE_PORT" "5432"
@@ -1128,6 +1239,7 @@ $TimeZone = Get-EnvValue "TZ" "Asia/Shanghai"
 
 switch ($Action.ToLowerInvariant()) {
     "up" {
+        Prompt-RemoteConnectionIfNeeded
         Start-Tunnel
         Build-Images
         Write-RuntimeFiles
@@ -1136,6 +1248,7 @@ switch ($Action.ToLowerInvariant()) {
         Open-UrlHint
     }
     "deploy" {
+        Prompt-RemoteConnectionIfNeeded
         Start-Tunnel
         Build-Images
         Write-RuntimeFiles
@@ -1147,9 +1260,11 @@ switch ($Action.ToLowerInvariant()) {
         Build-Images
     }
     "tunnel" {
+        Prompt-RemoteConnectionIfNeeded
         Start-Tunnel
     }
     "restart" {
+        Prompt-RemoteConnectionIfNeeded
         Start-Tunnel
         Build-Images
         Write-RuntimeFiles

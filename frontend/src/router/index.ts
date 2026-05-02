@@ -221,6 +221,22 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/recharge',
+    name: 'Recharge',
+    component: () => import('@/views/user/RechargeView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Online Recharge',
+      titleKey: 'onlineRecharge.title',
+      descriptionKey: 'onlineRecharge.subtitle'
+    }
+  },
+  {
+    path: '/online-recharge',
+    redirect: '/recharge'
+  },
+  {
     path: '/affiliate',
     name: 'Affiliate',
     component: () => import('@/views/user/AffiliateView.vue'),
@@ -737,6 +753,8 @@ router.beforeEach((to, _from, next) => {
       '/admin/subscriptions',
       '/admin/redeem',
       '/subscriptions',
+      '/recharge',
+      '/online-recharge',
       '/redeem'
     ]
 

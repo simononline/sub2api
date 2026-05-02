@@ -56,6 +56,7 @@ func (h *SettingHandler) GetPublicSettings(c *gin.Context) {
 		TablePageSizeOptions:             settings.TablePageSizeOptions,
 		CustomMenuItems:                  dto.ParseUserVisibleMenuItems(settings.CustomMenuItems),
 		CustomEndpoints:                  dto.ParseCustomEndpoints(settings.CustomEndpoints),
+		OnlineRechargeProducts:           dto.ParseEnabledOnlineRechargeProducts(settings.OnlineRechargeProducts),
 		LinuxDoOAuthEnabled:              settings.LinuxDoOAuthEnabled,
 		WeChatOAuthEnabled:               settings.WeChatOAuthEnabled,
 		WeChatOAuthOpenEnabled:           settings.WeChatOAuthOpenEnabled,

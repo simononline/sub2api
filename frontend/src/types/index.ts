@@ -178,6 +178,16 @@ export interface CustomEndpoint {
   description: string
 }
 
+export interface OnlineRechargeProduct {
+  id: string
+  title: string
+  description: string
+  url: string
+  type_keyword: string
+  sort_order: number
+  enabled: boolean
+}
+
 export interface PublicSettings {
   registration_enabled: boolean
   email_verify_enabled: boolean
@@ -201,6 +211,7 @@ export interface PublicSettings {
   table_page_size_options: number[]
   custom_menu_items: CustomMenuItem[]
   custom_endpoints: CustomEndpoint[]
+  online_recharge_products: OnlineRechargeProduct[]
   linuxdo_oauth_enabled: boolean
   wechat_oauth_enabled: boolean
   wechat_oauth_open_enabled?: boolean

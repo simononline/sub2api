@@ -378,6 +378,7 @@ func registerRedeemCodeRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 		codes.POST("/generate", h.Admin.Redeem.Generate)
 		codes.DELETE("/:id", h.Admin.Redeem.Delete)
 		codes.POST("/batch-delete", h.Admin.Redeem.BatchDelete)
+		codes.POST("/batch-delete-by-filter", h.Admin.Redeem.BatchDeleteByFilter)
 		codes.POST("/:id/expire", h.Admin.Redeem.Expire)
 	}
 }
@@ -399,6 +400,7 @@ func registerSettingsRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 	{
 		adminSettings.GET("", h.Admin.Setting.GetSettings)
 		adminSettings.PUT("", h.Admin.Setting.UpdateSettings)
+		adminSettings.PUT("/online-recharge-products", h.Admin.Setting.UpdateOnlineRechargeProducts)
 		adminSettings.POST("/test-smtp", h.Admin.Setting.TestSMTPConnection)
 		adminSettings.POST("/send-test-email", h.Admin.Setting.SendTestEmail)
 		// Admin API Key 管理
