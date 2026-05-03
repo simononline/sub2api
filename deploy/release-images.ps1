@@ -361,7 +361,7 @@ function Write-LinesUtf8NoBom {
     )
 
     $encoding = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllLines($Path, $Lines, $encoding)
+    [System.IO.File]::WriteAllText($Path, (($Lines -join "`n") + "`n"), $encoding)
 }
 
 function Remove-DirectorySafe {
@@ -954,6 +954,10 @@ cd "$REMOTE_DIR"
 
 log "extracting release package to $REMOTE_DIR"
 tar -xzf "$PACKAGE_NAME" -C "$REMOTE_DIR"
+
+if [ -f manifest.env ]; then
+    sed -i 's/\r$//' manifest.env
+fi
 
 case "$ENV_POLICY" in
     keep)
