@@ -50,6 +50,30 @@ function First-Value {
     return ""
 }
 
+function Use-DockerHubMirror {
+    param(
+        [string]$Image,
+        [string]$Mirror
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Mirror)) {
+        return $Image
+    }
+
+    if ($Image -match "/") {
+        $firstSegment = ($Image -split "/")[0]
+        if ($firstSegment -match "[\.:]" -or $firstSegment -eq "localhost") {
+            return $Image
+        }
+    }
+
+    $prefix = ($Mirror -replace "^https?://", "").TrimEnd("/")
+    if ($Image -notmatch "/") {
+        return "$prefix/library/$Image"
+    }
+    return "$prefix/$Image"
+}
+
 function Require-Command {
     param([string]$Name)
     if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
@@ -510,16 +534,30 @@ function Build-Images {
     Log "image prefix: $ProjectName"
     Log "business tag: $Tag"
     Log "target platform: $Platform"
+    Log "docker hub mirror: $DockerHubMirror"
+    Log "apk mirror: $ApkMirror"
+    Log "npm registry: $NpmRegistry"
+    Log "source images:"
+    Log "  Redis    $RedisSourceImage"
+    Log "  Go       $GolangImage"
+    Log "  Alpine   $AlpineImage"
+    Log "  Postgres $PostgresImage"
+    Log "  Node     $NodeImage"
+    Log "  Nginx    $NginxImage"
 
     Ensure-BaseImageOnce $RedisImage $RedisSourceImage "Redis"
 
     if (Test-Enabled $BuildBackend "BUILD_BACKEND") {
         Rebuild-Image $BackendImage (Join-Path $RootDir "deploy\Dockerfile.backend") "backend" @(
+            "--build-arg", "GOLANG_IMAGE=$GolangImage",
+            "--build-arg", "ALPINE_IMAGE=$AlpineImage",
+            "--build-arg", "POSTGRES_IMAGE=$PostgresImage",
             "--build-arg", "VERSION=$Version",
             "--build-arg", "COMMIT=$Commit",
             "--build-arg", "DATE=$Date",
             "--build-arg", "GOPROXY=$GoProxy",
-            "--build-arg", "GOSUMDB=$GoSumDB"
+            "--build-arg", "GOSUMDB=$GoSumDB",
+            "--build-arg", "APK_MIRROR=$ApkMirror"
         )
     } else {
         if (-not (Test-ImageExists $BackendImage)) {
@@ -529,7 +567,11 @@ function Build-Images {
     }
 
     if (Test-Enabled $BuildFrontend "BUILD_FRONTEND") {
-        Rebuild-Image $FrontendImage (Join-Path $RootDir "deploy\Dockerfile.frontend") "frontend"
+        Rebuild-Image $FrontendImage (Join-Path $RootDir "deploy\Dockerfile.frontend") "frontend" @(
+            "--build-arg", "NODE_IMAGE=$NodeImage",
+            "--build-arg", "NGINX_IMAGE=$NginxImage",
+            "--build-arg", "NPM_REGISTRY=$NpmRegistry"
+        )
     } else {
         if (-not (Test-ImageExists $FrontendImage)) {
             Die "BUILD_FRONTEND=0 but frontend image is missing: $FrontendImage"
@@ -1185,6 +1227,9 @@ Common environment overrides:
   SSH_PROXY_URL=socks5://127.0.0.1:7890
   START_TUNNEL=1|0
   SKIP_DOCKERFILE_SYNTAX=1|0
+  DOCKERHUB_MIRROR=$DockerHubMirror
+  APK_MIRROR=$ApkMirror
+  NPM_REGISTRY=$NpmRegistry
 "@
 }
 
@@ -1197,7 +1242,16 @@ $Platform = Get-EnvValue "PLATFORM" "linux/amd64"
 $ProjectName = Get-EnvValue "PROJECT_NAME" "my-sub2api"
 $Tag = Get-EnvValue "TAG" "local"
 
-$RedisSourceImage = Get-EnvValue "REDIS_SOURCE_IMAGE" "redis:8-alpine"
+$DockerHubMirror = Get-EnvValue "DOCKERHUB_MIRROR" "docker.1ms.run"
+$ApkMirror = Get-EnvValue "APK_MIRROR" "https://mirrors.aliyun.com/alpine"
+$NpmRegistry = Get-EnvValue "NPM_REGISTRY" "https://registry.npmmirror.com"
+
+$GolangImage = Get-EnvValue "GOLANG_IMAGE" (Use-DockerHubMirror "golang:1.26.2-alpine" $DockerHubMirror)
+$AlpineImage = Get-EnvValue "ALPINE_IMAGE" (Use-DockerHubMirror "alpine:3.21" $DockerHubMirror)
+$PostgresImage = Get-EnvValue "POSTGRES_IMAGE" (Use-DockerHubMirror "postgres:18-alpine" $DockerHubMirror)
+$NodeImage = Get-EnvValue "NODE_IMAGE" (Use-DockerHubMirror "node:24-alpine" $DockerHubMirror)
+$NginxImage = Get-EnvValue "NGINX_IMAGE" (Use-DockerHubMirror "nginx:1.27-alpine" $DockerHubMirror)
+$RedisSourceImage = Get-EnvValue "REDIS_SOURCE_IMAGE" (Use-DockerHubMirror "redis:8-alpine" $DockerHubMirror)
 $RedisImage = Get-EnvValue "REDIS_IMAGE" "$ProjectName-redis:8-alpine"
 $BackendImage = Get-EnvValue "BACKEND_IMAGE" "$ProjectName-backend:$Tag"
 $FrontendImage = Get-EnvValue "FRONTEND_IMAGE" "$ProjectName-frontend:$Tag"

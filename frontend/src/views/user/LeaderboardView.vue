@@ -306,6 +306,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscriptions'
 import { extractApiErrorMessage } from '@/utils/apiError'
 import { formatCurrency, formatDateOnly, formatNumber } from '@/utils/format'
+import { buildLeaderboardRows, getLeaderboardRequestLimit } from '@/utils/leaderboardFiller'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -337,7 +338,9 @@ const presets = computed(() => [
   { days: 89, label: t('leaderboard.presets.ninetyDays') },
 ])
 
-const rows = computed<UserSpendingRankingItem[]>(() => ranking.value?.ranking || [])
+const rows = computed<UserSpendingRankingItem[]>(() => {
+  return buildLeaderboardRows(ranking.value?.ranking || [], limit.value, new Date(nowTick.value))
+})
 const isMasked = computed(() => ranking.value?.masked_accounts ?? !authStore.isAdmin)
 const viewerHint = computed(() => isMasked.value ? t('leaderboard.descriptionMasked') : t('leaderboard.descriptionAdmin'))
 const user = computed(() => authStore.user)
@@ -400,7 +403,7 @@ async function loadRanking() {
     ranking.value = await usageAPI.getDashboardUsersRanking({
       start_date: startDate.value,
       end_date: endDate.value,
-      limit: limit.value,
+      limit: getLeaderboardRequestLimit(limit.value),
     })
   } catch (err: unknown) {
     appStore.showError(extractApiErrorMessage(err, t('leaderboard.loadError')))

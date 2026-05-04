@@ -12,16 +12,63 @@ export default {
     backToHome: '返回首页',
     getStarted: '立即开通',
     goToDashboard: '进入控制台',
-    poolNotice: '自建号池，平台维护大量 Pro 账号并在全球线路轮换，保障稳定与访问速度。见过太多平台说倒就倒、说停就停；真正让人崩溃的是赶排期时 AI 突然罢工。小事别绊住脚，工作要紧，任务排期不容有失，我们只为天才程序员们打造稳定后盾。',
-    heroBadge: 'AI 编程辅助服务',
-    heroTitle: '面向开发者的 AI 编程与文本生成服务',
-    heroSubtitle: '提供稳定的模型调用能力，支持代码生成、文本生成、内容改写、程序解释、接口集成等场景，适用于个人开发者、团队与企业应用。',
-    heroDescription: '用户购买的是本平台提供的统一接口、统一鉴权、统一计费、统一日志与编程场景优化服务，而不是任何第三方账户权益或第三方原生计费资源。',
+    poolNotice: '为开发团队提供稳定的 AI 代码编程辅助能力：统一接口、统一鉴权、统一计费、调用日志、模型路由与失败重试，帮助团队把更多时间投入到设计、研发与交付本身。',
+    heroBadge: 'AI 代码编程辅助 · 设计 · 代码质量审查',
+    heroTitle: 'AI 编程效率平台',
+    heroTitleAccent: '设计 · 审查 · 交付',
+    heroSubtitle: '面向开发者、产品团队与企业研发场景，提供代码生成、功能设计、代码解释、重构建议、质量审查与技术文档生成能力。',
+    heroDescription: '通过统一 API 与可观测的用量管理，把分散的模型能力沉淀为稳定的工程服务，减少重复沟通、人工排查和低价值编码时间。',
     tags: {
-      subscriptionToApi: '统一 API 接入',
-      stickySession: '统一鉴权与日志',
-      realtimeBilling: '统一计费与配额',
-      engineerSupport: '模型路由与容灾'
+      subscriptionToApi: 'AI 编程辅助',
+      stickySession: '设计与需求拆解',
+      realtimeBilling: '代码质量审查',
+      engineerSupport: '节约时间与人力成本'
+    },
+    heroValues: {
+      coding: {
+        title: '代码编程辅助',
+        desc: '从需求描述生成代码骨架、函数逻辑、脚本与结构化输出。'
+      },
+      design: {
+        title: '方案与界面设计',
+        desc: '辅助拆解产品需求、页面文案、交互说明与技术方案。'
+      },
+      review: {
+        title: '代码质量审查',
+        desc: '识别潜在缺陷、边界条件、可维护性风险与测试缺口。'
+      },
+      efficiency: {
+        title: '降本增效',
+        desc: '减少重复编码和人工检查，释放研发、测试与设计人力。'
+      }
+    },
+    heroMetrics: {
+      delivery: {
+        value: '更快',
+        label: '需求到代码交付'
+      },
+      review: {
+        value: '更稳',
+        label: '审查、重构与测试建议'
+      },
+      cost: {
+        value: '更省',
+        label: '时间与人力成本'
+      }
+    },
+    visualHighlights: {
+      assistant: {
+        title: 'AI Coding Assistant',
+        desc: '生成、解释、重构与调试辅助'
+      },
+      quality: {
+        title: 'Quality Review',
+        desc: '风险扫描、边界检查、测试建议'
+      },
+      cost: {
+        title: 'Cost Control',
+        desc: '配额、日志与团队用量可视化'
+      }
     },
     // 用户痛点区块
     painPoints: {
@@ -454,7 +501,7 @@ export default {
     announcements: '公告',
     apiKeys: 'API 密钥',
     usage: '使用记录',
-    leaderboard: '排行榜',
+    leaderboard: '战斗排行榜',
     affiliate: '邀请返利',
     profile: '个人资料',
     users: '用户管理',
@@ -477,7 +524,7 @@ export default {
     logout: '退出登录',
     github: 'GitHub',
     mySubscriptions: '我的订阅',
-    onlineRecharge: '在线充值',
+    onlineRecharge: '立即合购',
     buySubscription: '充值/订阅',
     docs: '文档',
     helpGuide: '帮助指南',
@@ -1100,11 +1147,11 @@ export default {
   },
 
   leaderboard: {
-    title: '排行榜',
+    title: '战斗排行榜',
     description: '查看用户消费排行榜',
-    descriptionMasked: '除你自己的账号外，榜单账号已打码，仅展示排行、消费、请求数与 Token 汇总。快来参与打榜，冲击更高排名！',
-    descriptionAdmin: '当前账号以管理员身份查看，榜单展示真实用户账号与完整排行数据。',
-    badge: '使用排行榜',
+    descriptionMasked: '每天都来瞄一眼自己的排名：手别停，榜要打，前面的人都是临时 Boss，迟早把他们干掉！除你自己的账号外，榜单账号已打码。',
+    descriptionAdmin: '管理员观战模式：真实账号全展开。每天都来巡榜，看谁在偷偷发力，顺手把前面的对手干掉！',
+    badge: '战斗榜单',
     startDate: '开始日期',
     endDate: '结束日期',
     limit: '数量',
@@ -1132,7 +1179,7 @@ export default {
     countdownHoursMinutes: '{hours} 小时 {minutes} 分钟',
     countdownMinutes: '{minutes} 分钟',
     countdownLessThanMinute: '不足 1 分钟',
-    listTitle: '消费排行',
+    listTitle: '今日战况',
     rangeLabel: '{start} 至 {end}，最多显示前 {limit} 名',
     maskedAccounts: '账号已打码',
     realAccounts: '真实账号',
@@ -1241,7 +1288,7 @@ export default {
   },
 
   onlineRecharge: {
-    title: '在线充值',
+    title: '立即合购',
     subtitle: '购买兑换码并兑换到账',
     currentBalance: '当前余额',
     requests: '请求',
@@ -5482,7 +5529,7 @@ export default {
         siteNamePlaceholder: 'WeShare',
         siteSubtitle: '站点副标题',
         siteSubtitleHint: '显示在登录和注册页面',
-        siteSubtitlePlaceholder: '立志成为天才程序员的坚实后盾',
+        siteSubtitlePlaceholder: '其实是Token界的自助餐合购',
         apiBaseUrl: 'API 端点地址',
         apiBaseUrlHint: '用于"使用密钥"和"导入到 CC Switch"功能，留空则使用当前站点地址',
         apiBaseUrlPlaceholder: 'https://api.example.com',

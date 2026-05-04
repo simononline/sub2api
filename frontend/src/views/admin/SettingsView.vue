@@ -5552,7 +5552,7 @@ const form = reactive<SettingsForm>({
   default_user_rpm_limit: 0,
   site_name: "WeShare",
   site_logo: "",
-  site_subtitle: "立志成为天才程序员的坚实后盾",
+  site_subtitle: "其实是Token界的自助餐合购",
   api_base_url: "",
   contact_info: "",
   doc_url: "",

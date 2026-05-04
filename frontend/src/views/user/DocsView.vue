@@ -79,52 +79,7 @@
         </router-link>
       </nav>
 
-      <section
-        v-if="activeSectionId === 'intro'"
-        id="intro"
-        class="rounded-lg border border-gray-200 bg-white/95 p-5 shadow-card dark:border-dark-800 dark:bg-dark-900/90 md:p-6"
-      >
-        <div class="mb-5 flex items-center gap-3">
-          <div class="grid h-11 w-11 place-items-center rounded-lg border border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-500/20 dark:bg-primary-950/30 dark:text-primary-200">
-            <Icon name="book" size="lg" />
-          </div>
-          <div>
-            <h3 class="text-xl font-semibold text-gray-950 dark:text-white">心里话</h3>
-            <p class="text-sm text-gray-500 dark:text-dark-400">从自用到合购，只想把成本摊薄、把稳定留给大家。</p>
-          </div>
-        </div>
-
-        <div class="space-y-5 text-sm leading-8 text-gray-700 dark:text-dark-200 md:text-base md:leading-8">
-          <p>
-            这个网站最开始不是为了做成什么平台，而是<span class="rounded bg-primary-50 px-1.5 py-0.5 font-semibold text-primary-800 dark:bg-primary-500/15 dark:text-primary-100">我自己日常使用</span>的一个入口。服务器、域名、账号和线路都是真金白银的开支，后来开放注册给大家一起用，也只是从实际出发：既能把<span class="underline decoration-wavy decoration-amber-400 underline-offset-4 dark:decoration-amber-300">成本摊薄一点</span>，也能让和我一样需要<span class="text-lg font-semibold text-primary-700 dark:text-primary-200 md:text-xl">稳定工具</span>的人少走几段弯路。
-          </p>
-          <p>
-            我太理解那种被中转站折腾到心累的感觉了。为了找一个能长期用、<span class="underline decoration-wavy decoration-rose-400 underline-offset-4 dark:decoration-rose-300">关键时刻不掉链子</span>的渠道，我自己也花过很多钱去试：今天还好好的，明天突然不可用；<span class="rounded bg-rose-50 px-1.5 py-0.5 font-semibold text-rose-800 dark:bg-rose-500/15 dark:text-rose-100">任务急，项目紧</span>，上游服务商却死掉了；用 Cursor 时又总担心<span class="text-lg font-semibold text-amber-700 dark:text-amber-200 md:text-xl">额度</span>，单独买 Coding Plan 一方面贵，另一方面受5小时限额，用量到底够不够也很难提前算清楚。
-          </p>
-          <p>
-            现在很多平台已经不太愿意做<span class="rounded bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-100">月套餐</span>了，更多是让用户按额度用量付费。按量不是不好，但它会把价格波动和<span class="underline decoration-wavy decoration-amber-400 underline-offset-4 dark:decoration-amber-300">用量焦虑</span>都推给用户，让人每次使用前都要先在心里算一笔账，根本没法像吃自助餐一样踏踏实实把活干完。这个站想做的事情很简单：尽量把<span class="text-lg font-semibold text-primary-700 dark:text-primary-200 md:text-xl">不确定性留在我这边</span>，把更清楚、更稳定的使用体验留给你。
-          </p>
-          <p>
-            说实话，开这个平台一开始就没按赚钱来算。一是<span class="text-lg font-semibold text-emerald-700 dark:text-emerald-200 md:text-xl">保证稳定能访问</span>，二是<span class="underline decoration-wavy decoration-primary-400 underline-offset-4 dark:decoration-primary-300">摊平均价</span>，不用老是操心银行卡无法付账，黑Key导致封号，来来回回折腾。所以我自己买 OpenAI Pro 账号都在号池里，现在能继续跑下来，大家愿意参与进来，我也可以稍微喘口气。<span class="rounded bg-amber-50 px-1.5 py-0.5 font-semibold text-amber-900 dark:bg-amber-500/15 dark:text-amber-100">毕竟众人拾柴火焰高嘛</span>，这句话放在这里真的很贴切。
-          </p>
-          <p>
-            如果你愿意加群 <span class="rounded bg-primary-100 px-1.5 py-0.5 font-mono text-base font-semibold text-primary-800 dark:bg-primary-500/20 dark:text-primary-100">1041906235</span>，平时我也会看 Pro 号池额度剩余和平台状态，偶尔给大家<span class="underline decoration-wavy decoration-emerald-400 underline-offset-4 dark:decoration-emerald-300">发点福利、批量加点额度</span>。哪怕只是小套餐也没关系，我更希望它是一个大家能<span class="text-lg font-semibold text-primary-700 dark:text-primary-200 md:text-xl">长期放心用</span>的地方，而不是一次性收完钱就不管的站。
-          </p>
-          <p>
-            最后：目前暂时不支持 Claude，因为我自己主要使用 OpenAI 系，也会优先把<span class="rounded bg-sky-50 px-1.5 py-0.5 font-semibold text-sky-800 dark:bg-sky-500/15 dark:text-sky-100">OpenAI 号池</span>维护稳定。但如果以后想用 Claude 的小伙伴多起来了，我也会认真去找渠道、测稳定性、算成本，想办法让大家也能稳稳地用上。总归一句话：能<span class="underline decoration-wavy decoration-amber-400 underline-offset-4 dark:decoration-amber-300">便宜一点、稳定一点</span>，就值得继续折腾。
-          </p>
-          <figure class="space-y-3">
-            <img
-              src="/docs/pro-pool.png"
-              alt="现在的Pro号池"
-              class="w-full rounded-lg border border-gray-200 bg-white object-contain shadow-sm dark:border-dark-700 dark:bg-dark-950"
-            >
-            <figcaption class="text-center text-sm font-semibold text-gray-600 dark:text-dark-300">
-              现在的Pro号池
-            </figcaption>
-          </figure>
-        </div>
-      </section>
+      <HeartfeltIntro v-if="activeSectionId === 'intro'" section-id="intro" />
 
       <section
         v-else-if="activeSectionId === 'purchase'"
@@ -263,6 +218,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Icon from '@/components/icons/Icon.vue'
+import HeartfeltIntro from '@/components/marketing/HeartfeltIntro.vue'
 
 const docSections = [
   {

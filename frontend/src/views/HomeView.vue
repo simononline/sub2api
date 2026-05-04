@@ -28,7 +28,7 @@
     </div>
 
     <!-- Header -->
-    <header class="glass sticky top-0 z-30 border-b border-gray-200/50 dark:border-dark-700/50">
+    <header class="glass fixed inset-x-0 top-0 z-40 border-b border-gray-200/50 dark:border-dark-700/50">
       <nav class="flex h-16 items-center justify-between px-4 md:px-6">
         <router-link to="/home" class="flex min-w-0 items-center gap-3">
           <div class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg border border-primary-400/30 bg-dark-950/5 dark:bg-dark-950">
@@ -242,6 +242,7 @@
         </div>
       </nav>
     </header>
+    <div class="h-16 shrink-0" aria-hidden="true"></div>
 
     <!-- Main Content -->
     <main class="relative z-10 flex-1 px-6 py-14 md:py-20">
@@ -267,37 +268,46 @@
           </p>
         </div>
 
-        <!-- Hero Section - Left/Right Layout -->
-        <div class="mb-14 flex flex-col items-center justify-between gap-12 lg:flex-row lg:gap-16">
-          <!-- Left: Text Content -->
-          <div class="flex-1 text-center lg:text-left">
-            <div
-              class="mb-4 inline-flex items-center gap-2 rounded-full border border-primary-400/30 bg-primary-500/10 px-3 py-1 text-xs font-medium text-primary-700 dark:text-primary-300"
-            >
+        <!-- Hero Section - Professional Copy Layout -->
+        <section class="home-hero-panel mb-14">
+          <div class="hero-copy">
+            <div class="hero-badge">
               <Icon name="sparkles" size="sm" />
               <span>{{ t('home.heroBadge') }}</span>
             </div>
-            <h1
-              class="mb-5 text-5xl font-normal leading-none text-gray-950 dark:text-dark-50 md:text-6xl lg:text-hero"
-            >
+            <h1 class="hero-title">
               {{ t('home.heroTitle') }}
+              <span>{{ t('home.heroTitleAccent') }}</span>
             </h1>
-            <p class="mb-8 max-w-xl text-base leading-7 text-gray-600 dark:text-dark-300 md:text-lg">
-              {{ siteSubtitle }}
+            <p class="hero-subtitle">
+              {{ t('home.heroSubtitle') }}
             </p>
-            <p class="mb-8 max-w-xl text-sm leading-6 text-gray-500 dark:text-dark-400 md:text-base">
+            <p class="hero-description">
               {{ t('home.heroDescription') }}
             </p>
 
-            <!-- CTA Button -->
-            <div class="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
-              <router-link :to="consoleEntryPath" class="btn btn-primary px-8 py-3 text-base">
+            <div class="hero-value-grid">
+              <div
+                v-for="item in heroValueCards"
+                :key="item.title"
+                class="hero-value-card"
+              >
+                <Icon :name="item.icon" size="md" />
+                <div>
+                  <h3>{{ item.title }}</h3>
+                  <p>{{ item.description }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="hero-actions">
+              <router-link :to="consoleEntryPath" class="btn btn-primary hero-primary-action">
                 {{ isAuthenticated ? t('home.goToDashboard') : t('home.getStarted') }}
                 <Icon name="arrowRight" size="md" class="ml-2" :stroke-width="2" />
               </router-link>
               <router-link
                 :to="plansEntryPath"
-                class="btn btn-secondary px-6 py-3 text-base"
+                class="btn btn-secondary hero-secondary-action"
               >
                 {{ t('home.viewPlans') }}
               </router-link>
@@ -306,40 +316,44 @@
                 :href="docUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="btn btn-secondary px-6 py-3 text-base"
+                class="btn btn-secondary hero-secondary-action"
               >
                 {{ t('home.viewDocs') }}
               </a>
             </div>
+
+            <div class="hero-metrics">
+              <div v-for="metric in heroMetrics" :key="metric.label">
+                <strong>{{ metric.value }}</strong>
+                <span>{{ metric.label }}</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Right: Terminal Animation -->
-          <div class="flex flex-1 justify-center lg:justify-end">
+          <div class="home-hero-visual">
             <div class="terminal-container">
               <div class="terminal-window">
-                <!-- Window header -->
                 <div class="terminal-header">
                   <div class="terminal-buttons">
                     <span class="btn-close"></span>
                     <span class="btn-minimize"></span>
                     <span class="btn-maximize"></span>
                   </div>
-                  <span class="terminal-title">terminal</span>
+                  <span class="terminal-title">AI delivery cockpit</span>
                 </div>
-                <!-- Terminal content -->
                 <div class="terminal-body">
                   <div class="code-line line-1">
                     <span class="code-prompt">$</span>
-                    <span class="code-cmd">curl</span>
-                    <span class="code-flag">-X POST</span>
-                    <span class="code-url">/v1/chat/completions</span>
+                    <span class="code-cmd">ai-code</span>
+                    <span class="code-flag">review</span>
+                    <span class="code-url">checkout-flow.ts</span>
                   </div>
                   <div class="code-line line-2">
-                    <span class="code-comment"># unified coding API</span>
+                    <span class="code-comment"># design spec + code review + tests</span>
                   </div>
                   <div class="code-line line-3">
-                    <span class="code-success">200 OK</span>
-                    <span class="code-response">{ "scene": "code_generation", "status": "ok" }</span>
+                    <span class="code-success">READY</span>
+                    <span class="code-response">{ "saved": "4.5h", "risk": "low" }</span>
                   </div>
                   <div class="code-line line-4">
                     <span class="code-prompt">$</span>
@@ -348,8 +362,24 @@
                 </div>
               </div>
             </div>
+
+            <div class="hero-visual-cards">
+              <div
+                v-for="item in visualHighlights"
+                :key="item.title"
+                class="hero-visual-card"
+              >
+                <Icon :name="item.icon" size="md" />
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <span>{{ item.description }}</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <HeartfeltIntro section-id="home-intro" class="mb-12" />
 
         <!-- Feature Tags - Centered -->
         <div class="mb-12 flex flex-wrap items-center justify-center gap-4 md:gap-6">
@@ -746,6 +776,7 @@ import { useAuthStore, useAppStore } from '@/stores'
 import AnnouncementBell from '@/components/common/AnnouncementBell.vue'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import Icon from '@/components/icons/Icon.vue'
+import HeartfeltIntro from '@/components/marketing/HeartfeltIntro.vue'
 import { sanitizeUrl } from '@/utils/url'
 // import  { type PublicSupportedModel } from '@/api/channels'
 // import { getModelsByPlatform } from '@/composables/useModelWhitelist'
@@ -793,6 +824,70 @@ const poolNoticeCharacters = computed(() => Array.from(t('home.poolNotice')))
 const poolNoticeScanDurationMs = computed(() => (
   (poolNoticeCharacters.value.length * poolNoticeScanStepMs) + 1200
 ))
+
+const heroValueCards = computed<Array<{
+  icon: HomeIconName
+  title: string
+  description: string
+}>>(() => [
+  {
+    icon: 'terminal',
+    title: t('home.heroValues.coding.title'),
+    description: t('home.heroValues.coding.desc')
+  },
+  {
+    icon: 'lightbulb',
+    title: t('home.heroValues.design.title'),
+    description: t('home.heroValues.design.desc')
+  },
+  {
+    icon: 'shield',
+    title: t('home.heroValues.review.title'),
+    description: t('home.heroValues.review.desc')
+  },
+  {
+    icon: 'clock',
+    title: t('home.heroValues.efficiency.title'),
+    description: t('home.heroValues.efficiency.desc')
+  }
+])
+
+const heroMetrics = computed(() => [
+  {
+    value: t('home.heroMetrics.delivery.value'),
+    label: t('home.heroMetrics.delivery.label')
+  },
+  {
+    value: t('home.heroMetrics.review.value'),
+    label: t('home.heroMetrics.review.label')
+  },
+  {
+    value: t('home.heroMetrics.cost.value'),
+    label: t('home.heroMetrics.cost.label')
+  }
+])
+
+const visualHighlights = computed<Array<{
+  icon: HomeIconName
+  title: string
+  description: string
+}>>(() => [
+  {
+    icon: 'brain',
+    title: t('home.visualHighlights.assistant.title'),
+    description: t('home.visualHighlights.assistant.desc')
+  },
+  {
+    icon: 'shield',
+    title: t('home.visualHighlights.quality.title'),
+    description: t('home.visualHighlights.quality.desc')
+  },
+  {
+    icon: 'chart',
+    title: t('home.visualHighlights.cost.title'),
+    description: t('home.visualHighlights.cost.desc')
+  }
+])
 
 function getPoolNoticeCharStyle(index: number) {
   return {
@@ -1120,8 +1215,295 @@ onBeforeUnmount(() => {
   transform: scale(0.95) translateY(-4px);
 }
 
+.home-hero-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+  gap: 3rem;
+  overflow: hidden;
+  border: 1px solid rgb(209 213 219 / 0.7);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 12% 18%, rgb(0 197 115 / 0.14), transparent 32%),
+    radial-gradient(circle at 86% 22%, rgb(15 15 15 / 0.08), transparent 34%),
+    linear-gradient(135deg, rgb(255 255 255 / 0.92), rgb(245 247 250 / 0.76));
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  box-shadow: 0 24px 80px rgb(15 23 42 / 0.08);
+}
+
+.dark .home-hero-panel {
+  border-color: rgb(46 46 46 / 0.9);
+  background:
+    radial-gradient(circle at 12% 18%, rgb(0 197 115 / 0.2), transparent 34%),
+    radial-gradient(circle at 86% 22%, rgb(62 207 142 / 0.12), transparent 30%),
+    linear-gradient(135deg, rgb(23 23 23 / 0.94), rgb(15 15 15 / 0.86));
+  box-shadow: 0 28px 90px rgb(0 0 0 / 0.24);
+}
+
+.home-hero-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(17 24 39 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(17 24 39 / 0.035) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(115deg, black, transparent 76%);
+}
+
+.dark .home-hero-panel::before {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.045) 1px, transparent 1px);
+}
+
+.hero-copy,
+.home-hero-visual {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  border: 1px solid rgb(0 197 115 / 0.24);
+  border-radius: 999px;
+  background: rgb(0 197 115 / 0.1);
+  padding: 0.45rem 0.8rem;
+  color: #008f55;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.dark .hero-badge {
+  color: #6ee7b7;
+  background: rgb(0 197 115 / 0.12);
+}
+
+.hero-title {
+  margin-top: 1.1rem;
+  max-width: 760px;
+  color: #0f172a;
+  font-size: clamp(2.6rem, 5vw, 4.7rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.dark .hero-title {
+  color: #fafafa;
+}
+
+.hero-title span {
+  display: block;
+  margin-top: 0.18em;
+  font-size: 0.84em;
+  background: linear-gradient(90deg, #00a862, #3ecf8e 52%, #0f172a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dark .hero-title span {
+  background-image: linear-gradient(90deg, #6ee7b7, #3ecf8e 48%, #fafafa);
+}
+
+.hero-subtitle {
+  margin-top: 1.25rem;
+  max-width: 680px;
+  color: #374151;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  line-height: 1.8;
+}
+
+.dark .hero-subtitle {
+  color: #d7d7d7;
+}
+
+.hero-description {
+  margin-top: 0.85rem;
+  max-width: 660px;
+  color: #6b7280;
+  font-size: 0.98rem;
+  line-height: 1.75;
+}
+
+.dark .hero-description {
+  color: #a3a3a3;
+}
+
+.hero-value-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1.8rem;
+}
+
+.hero-value-card {
+  display: flex;
+  gap: 0.8rem;
+  min-width: 0;
+  border: 1px solid rgb(209 213 219 / 0.7);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 0.68);
+  padding: 1rem;
+  backdrop-filter: blur(16px);
+}
+
+.dark .hero-value-card {
+  border-color: rgb(57 57 57 / 0.82);
+  background: rgb(15 15 15 / 0.5);
+}
+
+.hero-value-card > svg {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: #00a862;
+}
+
+.hero-value-card h3 {
+  color: #111827;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.dark .hero-value-card h3 {
+  color: #fafafa;
+}
+
+.hero-value-card p {
+  margin-top: 0.35rem;
+  color: #6b7280;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.dark .hero-value-card p {
+  color: #b4b4b4;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.hero-primary-action,
+.hero-secondary-action {
+  padding: 0.85rem 1.35rem;
+  font-size: 1rem;
+}
+
+.hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1.5rem;
+  max-width: 650px;
+}
+
+.hero-metrics div {
+  border-left: 2px solid rgb(0 197 115 / 0.46);
+  padding-left: 0.85rem;
+}
+
+.hero-metrics strong {
+  display: block;
+  color: #111827;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.dark .hero-metrics strong {
+  color: #fafafa;
+}
+
+.hero-metrics span {
+  display: block;
+  margin-top: 0.2rem;
+  color: #6b7280;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.dark .hero-metrics span {
+  color: #b4b4b4;
+}
+
+.home-hero-visual {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.hero-visual-cards {
+  display: grid;
+  gap: 0.75rem;
+  margin-left: clamp(0rem, 3vw, 2.5rem);
+}
+
+.hero-visual-card {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  border: 1px solid rgb(209 213 219 / 0.68);
+  border-radius: 16px;
+  background: rgb(255 255 255 / 0.76);
+  padding: 0.85rem 1rem;
+  box-shadow: 0 14px 36px rgb(15 23 42 / 0.07);
+  backdrop-filter: blur(16px);
+}
+
+.dark .hero-visual-card {
+  border-color: rgb(57 57 57 / 0.84);
+  background: rgb(23 23 23 / 0.72);
+  box-shadow: 0 18px 42px rgb(0 0 0 / 0.18);
+}
+
+.hero-visual-card svg {
+  color: #00a862;
+  flex-shrink: 0;
+}
+
+.hero-visual-card strong,
+.hero-visual-card span {
+  display: block;
+}
+
+.hero-visual-card strong {
+  color: #111827;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.dark .hero-visual-card strong {
+  color: #fafafa;
+}
+
+.hero-visual-card span {
+  margin-top: 0.18rem;
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+
+.dark .hero-visual-card span {
+  color: #b4b4b4;
+}
+
 .pool-notice-text {
   max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .pool-notice-char {
@@ -1168,6 +1550,7 @@ onBeforeUnmount(() => {
 .terminal-container {
   position: relative;
   display: inline-block;
+  max-width: 100%;
 }
 
 /* Terminal Window */
@@ -1312,6 +1695,86 @@ onBeforeUnmount(() => {
   51%,
   100% {
     opacity: 0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .home-hero-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .home-hero-visual {
+    align-items: center;
+  }
+
+  .hero-copy {
+    text-align: center;
+  }
+
+  .hero-badge,
+  .hero-actions {
+    margin-right: auto;
+    margin-left: auto;
+    justify-content: center;
+  }
+
+  .hero-subtitle,
+  .hero-description,
+  .hero-title,
+  .hero-metrics {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .hero-visual-cards {
+    width: min(100%, 520px);
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-hero-panel {
+    border-radius: 20px;
+    padding: 1.25rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2.15rem, 10vw, 2.55rem);
+    letter-spacing: -0.055em;
+  }
+
+  .hero-subtitle,
+  .hero-description,
+  .hero-value-card p,
+  .pool-notice-text {
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+
+  .hero-value-grid,
+  .hero-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .hero-primary-action,
+  .hero-secondary-action {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .terminal-body {
+    padding: 16px;
+    font-size: 12px;
+  }
+
+  .terminal-window {
+    width: 100%;
+    max-width: calc(100vw - 4.5rem);
   }
 }
 

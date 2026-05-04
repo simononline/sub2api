@@ -63,7 +63,7 @@ const appStore = useAppStore()
 
 const siteName = computed(() => appStore.siteName || 'WeShare')
 const siteLogo = computed(() => sanitizeUrl(appStore.siteLogo || '', { allowRelative: true, allowDataUrl: true }))
-const siteSubtitle = computed(() => appStore.cachedPublicSettings?.site_subtitle || '立志成为天才程序员的坚实后盾')
+const siteSubtitle = computed(() => appStore.cachedPublicSettings?.site_subtitle || '其实是Token界的自助餐合购')
 const settingsLoaded = computed(() => appStore.publicSettingsLoaded)
 
 const currentYear = computed(() => new Date().getFullYear())

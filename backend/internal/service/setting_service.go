@@ -67,7 +67,7 @@ const versionBoundsErrorTTL = 5 * time.Second
 // versionBoundsDBTimeout singleflight 内 DB 查询超时，独立于请求 context
 const versionBoundsDBTimeout = 5 * time.Second
 
-const defaultSiteSubtitle = "立志成为天才程序员的坚实后盾"
+const defaultSiteSubtitle = "其实是Token界的自助餐合购"
 
 // cachedBackendMode Backend Mode cache (in-process, 60s TTL)
 type cachedBackendMode struct {

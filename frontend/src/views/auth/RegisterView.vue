@@ -763,8 +763,8 @@ async function handleRegister(): Promise<void> {
     // Show success toast
     appStore.showSuccess(t('auth.accountCreatedSuccess', { siteName: siteName.value }))
 
-    // Redirect to dashboard
-    await router.push('/dashboard')
+    // Redirect to subscriptions
+    await router.push('/subscriptions')
   } catch (error: unknown) {
     // Reset Turnstile on error
     if (turnstileRef.value) {

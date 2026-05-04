@@ -12,16 +12,63 @@ export default {
     backToHome: 'Back Home',
     getStarted: 'Start Service',
     goToDashboard: 'Go to Dashboard',
-    poolNotice: 'Provide unified API access, authentication, billing, logs, model routing, and retry capability so developers can hide upstream complexity behind one stable service.',
-    heroBadge: 'AI coding assistance service',
-    heroTitle: 'AI coding and text generation services for developers',
-    heroSubtitle: 'Stable model access for code generation, text generation, rewriting, program explanation, and application integration across individual, team, and enterprise use cases.',
-    heroDescription: 'Users purchase this platform service layer, including unified API access, authentication, billing, logging, and developer-oriented optimization, rather than any third-party account entitlement or native billing resource.',
+    poolNotice: 'Provide stable AI coding assistance for development teams: unified API access, authentication, billing, logs, model routing, and retries so teams can focus on design, engineering, and delivery.',
+    heroBadge: 'AI coding assistance · Design · Code quality review',
+    heroTitle: 'Turn AI into your team’s coding productivity engine',
+    heroTitleAccent: 'ship faster with lower cost',
+    heroSubtitle: 'Built for developers, product teams, and enterprise engineering workflows: code generation, product design support, code explanation, refactoring advice, quality review, and technical documentation.',
+    heroDescription: 'Unify model capability behind one observable API layer to reduce repeated communication, manual investigation, and low-value coding time.',
     tags: {
-      subscriptionToApi: 'Unified API Access',
-      stickySession: 'Unified Auth & Logs',
-      realtimeBilling: 'Billing & Quotas',
-      engineerSupport: 'Routing & Failover'
+      subscriptionToApi: 'AI Coding Assistance',
+      stickySession: 'Design & Requirement Breakdown',
+      realtimeBilling: 'Code Quality Review',
+      engineerSupport: 'Save Time and Labor Cost'
+    },
+    heroValues: {
+      coding: {
+        title: 'Coding Assistance',
+        desc: 'Generate code skeletons, function logic, scripts, and structured output from requirements.'
+      },
+      design: {
+        title: 'Design Support',
+        desc: 'Help shape product requirements, UI copy, interaction notes, and technical plans.'
+      },
+      review: {
+        title: 'Code Quality Review',
+        desc: 'Find likely defects, edge cases, maintainability risks, and missing tests.'
+      },
+      efficiency: {
+        title: 'Efficiency and Cost',
+        desc: 'Reduce repetitive coding and manual checks to free engineering, QA, and design time.'
+      }
+    },
+    heroMetrics: {
+      delivery: {
+        value: 'Faster',
+        label: 'requirement-to-code delivery'
+      },
+      review: {
+        value: 'Safer',
+        label: 'review, refactor, and test advice'
+      },
+      cost: {
+        value: 'Lower',
+        label: 'time and labor cost'
+      }
+    },
+    visualHighlights: {
+      assistant: {
+        title: 'AI Coding Assistant',
+        desc: 'Generate, explain, refactor, and debug'
+      },
+      quality: {
+        title: 'Quality Review',
+        desc: 'Risk scans, edge checks, and test ideas'
+      },
+      cost: {
+        title: 'Cost Control',
+        desc: 'Quotas, logs, and team usage visibility'
+      }
     },
     // Pain points section
     painPoints: {
@@ -477,7 +524,7 @@ export default {
     logout: 'Logout',
     github: 'GitHub',
     mySubscriptions: 'My Subscriptions',
-    onlineRecharge: 'Online Recharge',
+    onlineRecharge: '立即合购',
     buySubscription: 'Recharge / Subscription',
     docs: 'Docs',
     helpGuide: 'Help Guide',
@@ -1237,7 +1284,7 @@ export default {
   },
 
   onlineRecharge: {
-    title: 'Online Recharge',
+    title: '立即合购',
     subtitle: 'Buy a redeem code and apply it to your account',
     currentBalance: 'Current Balance',
     requests: 'requests',
@@ -5323,7 +5370,7 @@ export default {
         siteNamePlaceholder: 'WeShare',
         siteNameHint: 'Displayed in emails and page titles',
         siteSubtitle: 'Site Subtitle',
-        siteSubtitlePlaceholder: 'Your steadfast support on the path to becoming a great programmer',
+        siteSubtitlePlaceholder: 'Actually, a buffet-style group buy for tokens',
         siteSubtitleHint: 'Displayed on login and register pages',
         apiBaseUrl: 'API Base URL',
         apiBaseUrlPlaceholder: 'https://api.example.com',

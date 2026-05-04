@@ -227,7 +227,7 @@ const routes: RouteRecordRaw[] = [
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: 'Online Recharge',
+      title: '立即合购',
       titleKey: 'onlineRecharge.title',
       descriptionKey: 'onlineRecharge.subtitle'
     }

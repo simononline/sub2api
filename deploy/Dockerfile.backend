@@ -10,6 +10,7 @@ ARG ALPINE_IMAGE=alpine:3.21
 ARG POSTGRES_IMAGE=postgres:18-alpine
 ARG GOPROXY=https://mirrors.aliyun.com/goproxy/,direct
 ARG GOSUMDB=sum.golang.google.cn
+ARG APK_MIRROR=https://mirrors.aliyun.com/alpine
 # ARG GOPROXY=https://goproxy.cn,direct
 # ARG GOSUMDB=sum.golang.google.cn
 
@@ -20,11 +21,13 @@ ARG COMMIT=docker
 ARG DATE
 ARG GOPROXY
 ARG GOSUMDB
+ARG APK_MIRROR
 
 ENV GOPROXY=${GOPROXY}
 ENV GOSUMDB=${GOSUMDB}
 
-RUN apk add --no-cache git ca-certificates tzdata
+RUN sed -i "s|https://dl-cdn.alpinelinux.org/alpine|${APK_MIRROR}|g" /etc/apk/repositories && \
+    apk add --no-cache git ca-certificates tzdata
 
 WORKDIR /app/backend
 
@@ -52,7 +55,10 @@ FROM ${ALPINE_IMAGE}
 LABEL maintainer="my-sub2api"
 LABEL description="My Sub2API Backend"
 
-RUN apk add --no-cache \
+ARG APK_MIRROR
+
+RUN sed -i "s|https://dl-cdn.alpinelinux.org/alpine|${APK_MIRROR}|g" /etc/apk/repositories && \
+    apk add --no-cache \
     ca-certificates \
     tzdata \
     su-exec \

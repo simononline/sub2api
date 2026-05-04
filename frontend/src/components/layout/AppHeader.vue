@@ -21,10 +21,27 @@
         </div>
       </div>
 
-      <!-- Right: Announcements + Docs + Language + Subscriptions + Balance + User Dropdown -->
+      <!-- Right: Announcements + Recharge + Docs + Language + Subscriptions + Balance + User Dropdown -->
       <div class="flex items-center gap-3">
         <!-- Announcement Bell -->
         <AnnouncementBell v-if="user" />
+
+        <!-- Recharge Link -->
+        <router-link
+          v-if="user"
+          to="/recharge"
+          class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors"
+          :class="[
+            isRechargeRoute
+              ? 'bg-primary-50 text-primary-700 ring-1 ring-primary-200 dark:bg-primary-950/30 dark:text-primary-200 dark:ring-primary-500/20'
+              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white',
+            shouldPulseGroupBuy ? 'group-buy-breathe' : ''
+          ]"
+          :aria-current="isRechargeRoute ? 'page' : undefined"
+        >
+          <Icon name="gift" size="sm" />
+          <span class="hidden sm:inline">立即合购</span>
+        </router-link>
 
         <!-- Docs Link -->
         <router-link
@@ -230,7 +247,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useAppStore, useAuthStore, useOnboardingStore } from '@/stores'
+import { useAppStore, useAuthStore, useOnboardingStore, useSubscriptionStore } from '@/stores'
 import { useAdminSettingsStore } from '@/stores/adminSettings'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import SubscriptionProgressMini from '@/components/common/SubscriptionProgressMini.vue'
@@ -243,6 +260,7 @@ const route = useRoute()
 const { t } = useI18n()
 const appStore = useAppStore()
 const authStore = useAuthStore()
+const subscriptionStore = useSubscriptionStore()
 const adminSettingsStore = useAdminSettingsStore()
 const onboardingStore = useOnboardingStore()
 
@@ -252,7 +270,13 @@ const dropdownRef = ref<HTMLElement | null>(null)
 const contactInfo = computed(() => appStore.contactInfo)
 const avatarUrl = computed(() => sanitizeUrl(user.value?.avatar_url || ''))
 const isDark = ref(document.documentElement.classList.contains('dark'))
+const isRechargeRoute = computed(() => route.path === '/recharge' || route.path.startsWith('/recharge/'))
 const isDocsRoute = computed(() => route.path === '/docs' || route.path.startsWith('/docs/'))
+const shouldPulseGroupBuy = computed(() => (
+  Boolean(user.value)
+  && !subscriptionStore.loading
+  && !subscriptionStore.hasActiveSubscriptions
+))
 const themeToggleLabel = computed(() => (
   isDark.value ? t('nav.lightMode') : t('nav.darkMode')
 ))
@@ -378,5 +402,25 @@ onBeforeUnmount(() => {
 .dropdown-leave-to {
   opacity: 0;
   transform: scale(0.95) translateY(-4px);
+}
+
+.group-buy-breathe {
+  animation: group-buy-breathe 1.8s ease-in-out infinite;
+  will-change: transform, background-color, border-color, box-shadow;
+}
+
+@keyframes group-buy-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    background-color: transparent;
+    box-shadow: 0 0 0 0 rgb(251 191 36 / 0);
+  }
+
+  50% {
+    transform: scale(1.08);
+    background-color: rgb(251 191 36 / 0.22);
+    box-shadow: 0 0 0 6px rgb(251 191 36 / 0.16);
+  }
 }
 </style>
